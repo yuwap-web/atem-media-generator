@@ -1,20 +1,8 @@
 {
   "name": "Lower Third - Name Only",
   "template_type": "lower_third",
-  "background_color": null,
+  "background_color": [0, 0, 0, 0],
   "layers": [
-    {
-      "name": "Background Bar",
-      "x": 0,
-      "y": 900,
-      "width": 1920,
-      "height": 180,
-      "font_name": "Helvetica",
-      "font_size": 1,
-      "color": [0, 0, 0, 200],
-      "alignment": "left",
-      "parameter_key": "_background"
-    },
     {
       "name": "Name Text",
       "x": 80,
