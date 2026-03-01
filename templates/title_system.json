@@ -1,0 +1,33 @@
+{
+  "name": "Title - System Font",
+  "template_type": "title",
+  "background_color": [20, 20, 20, 255],
+  "layers": [
+    {
+      "name": "Main Title",
+      "x": 100,
+      "y": 400,
+      "width": 1720,
+      "height": 200,
+      "font_name": "Menlo",
+      "font_size": 72,
+      "color": [255, 200, 0, 255],
+      "alignment": "center",
+      "parameter_key": "title"
+    },
+    {
+      "name": "Subtitle",
+      "x": 100,
+      "y": 650,
+      "width": 1720,
+      "height": 100,
+      "font_name": "Menlo",
+      "font_size": 36,
+      "color": [180, 180, 180, 255],
+      "alignment": "center",
+      "parameter_key": "subtitle"
+    }
+  ],
+  "required_parameters": ["title"],
+  "optional_parameters": ["subtitle"]
+}

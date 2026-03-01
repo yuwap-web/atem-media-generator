@@ -1,0 +1,33 @@
+{
+  "name": "Title - Sans Serif",
+  "template_type": "title",
+  "background_color": [0, 0, 0, 255],
+  "layers": [
+    {
+      "name": "Main Title",
+      "x": 100,
+      "y": 400,
+      "width": 1720,
+      "height": 200,
+      "font_name": "Arial",
+      "font_size": 80,
+      "color": [255, 255, 255, 255],
+      "alignment": "center",
+      "parameter_key": "title"
+    },
+    {
+      "name": "Subtitle",
+      "x": 100,
+      "y": 650,
+      "width": 1720,
+      "height": 100,
+      "font_name": "Arial",
+      "font_size": 40,
+      "color": [200, 200, 200, 255],
+      "alignment": "center",
+      "parameter_key": "subtitle"
+    }
+  ],
+  "required_parameters": ["title"],
+  "optional_parameters": ["subtitle"]
+}

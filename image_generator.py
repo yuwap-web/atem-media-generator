@@ -107,20 +107,35 @@ class ImageGenerator:
                 self.font_cache[cache_key] = font
                 return font
 
-            # Try system fonts (common paths)
+            # Try system fonts (common paths with multiple extensions)
             system_font_paths = [
-                f"/Library/Fonts/{font_name}.ttf",  # macOS
-                f"/usr/share/fonts/truetype/{font_name.lower()}/{font_name}.ttf",  # Linux
-                f"C:\\Windows\\Fonts\\{font_name}.ttf",  # Windows
+                # macOS - multiple formats
+                f"/Library/Fonts/{font_name}.ttf",
+                f"/Library/Fonts/{font_name}.otf",
+                f"/System/Library/Fonts/{font_name}.ttf",
+                f"/System/Library/Fonts/{font_name}.otf",
+                f"/System/Library/Fonts/{font_name}.dfont",
+                # macOS Helvetica aliases
+                f"/Library/Fonts/Helvetica.ttc",
+                f"/System/Library/Fonts/Helvetica.ttc",
+                # Linux
+                f"/usr/share/fonts/truetype/{font_name.lower()}/{font_name}.ttf",
+                f"/usr/share/fonts/opentype/{font_name.lower()}/{font_name}.otf",
+                # Windows
+                f"C:\\Windows\\Fonts\\{font_name}.ttf",
+                f"C:\\Windows\\Fonts\\{font_name}.otf",
             ]
 
             for path in system_font_paths:
                 if os.path.exists(path):
-                    font = ImageFont.truetype(path, font_size)
-                    self.font_cache[cache_key] = font
-                    return font
+                    try:
+                        font = ImageFont.truetype(path, font_size)
+                        self.font_cache[cache_key] = font
+                        return font
+                    except Exception:
+                        continue  # Try next path
 
-            # Fallback to default font
+            # Fallback: use default font
             font = ImageFont.load_default()
             self.font_cache[cache_key] = font
             return font

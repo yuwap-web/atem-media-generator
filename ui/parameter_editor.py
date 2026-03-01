@@ -4,7 +4,8 @@ Displays and edits template parameters
 """
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
-    QScrollArea, QFormLayout, QPushButton, QMessageBox
+    QScrollArea, QFormLayout, QPushButton, QMessageBox,
+    QTabWidget, QTextEdit
 )
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QFont
