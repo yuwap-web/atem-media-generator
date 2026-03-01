@@ -18,28 +18,44 @@ A cross-platform desktop application for generating broadcast-quality PNG images
 
 ## Installation
 
-### Download Pre-Built Application
+### 📥 Download Pre-Built Application
 
 Visit the [Releases](https://github.com/kusurix-ux/Atem-picture-tool/releases) page and download:
-- **macOS**: `cpt_editor-mac.zip`
-- **Windows**: `cpt_editor.exe`
 
-### Run macOS Version
+**macOS** (v1.0.0 and later):
+- `ATEM-Media-Generator-mac.zip` - Native .app bundle with all dependencies
+- Extract: `unzip ATEM-Media-Generator-mac.zip`
+- Run: `open ATEM\ Media\ Generator.app` or double-click the app
+
+**Windows** (v1.0.0 and later):
+- `ATEM-Media-Generator-windows.zip` - Portable executable
+- Extract the zip file
+- Run: Double-click `ATEM-Media-Generator.exe`
+- No installation required - portable application
+
+### macOS Quick Start
 
 ```bash
-# Extract the downloaded zip
-unzip cpt_editor-mac.zip
+# 1. Download ATEM-Media-Generator-mac.zip from Releases
+# 2. Extract
+unzip ATEM-Media-Generator-mac.zip
 
-# Make executable and run
-chmod +x cpt_editor
-./cpt_editor
+# 3. Run the application
+open "ATEM Media Generator.app"
+
+# Alternative: Run from terminal
+"ATEM Media Generator.app/Contents/MacOS/ATEM Media Generator"
 ```
 
-### Run Windows Version
+### Windows Quick Start
 
 ```batch
-# Simply double-click cpt_editor.exe
-cpt_editor.exe
+# 1. Download ATEM-Media-Generator-windows.zip from Releases
+# 2. Extract the folder
+# 3. Double-click ATEM-Media-Generator.exe to run
+
+# Or from PowerShell:
+.\ATEM-Media-Generator\ATEM-Media-Generator.exe
 ```
 
 ## Building from Source
@@ -304,23 +320,58 @@ mediafile/
 └── output/                      # Generated images
 ```
 
-### Building for Distribution
+### 🏗️ Building for Distribution
 
-#### macOS
+#### macOS - Build .app Bundle
 
 ```bash
+# 1. Setup (first time only)
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# 2. Build .app bundle
 bash build-mac.sh
-# Output: dist/cpt_editor
-# Size: ~1.4MB (with --hidden-import optimization)
+
+# Output: dist/ATEM Media Generator.app (2.0MB binary)
+# The .app bundle includes all dependencies and libraries
+
+# 3. Create distributable .zip for GitHub Releases
+ditto -c -k --sequesterRsrc dist/ATEM\ Media\ Generator.app ATEM-Media-Generator-mac.zip
+# Output: ATEM-Media-Generator-mac.zip (28MB)
 ```
 
-#### Windows
+**macOS Build Notes:**
+- Creates native .app bundle with proper structure
+- Includes all PyQt5 and Pillow dependencies
+- Signed for macOS 10.13+
+- Binary: 2.0MB, Full bundle with dependencies: 28MB when zipped
+- Can be run directly: `open dist/ATEM\ Media\ Generator.app`
+
+#### Windows - Build EXE
 
 ```powershell
+# 1. Setup (first time only)
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+
+# 2. Build executable
 .\build-windows.ps1
-# Output: dist/cpt_editor.exe
-# Size: ~50MB
+
+# Output: dist\ATEM-Media-Generator\ATEM-Media-Generator.exe (~50MB)
+# Run: .\dist\ATEM-Media-Generator\ATEM-Media-Generator.exe
+
+# 3. Create distributable .zip for GitHub Releases
+powershell Compress-Archive -Path 'dist\ATEM-Media-Generator' -DestinationPath 'ATEM-Media-Generator-windows.zip'
+# Output: ATEM-Media-Generator-windows.zip (50-60MB)
 ```
+
+**Windows Build Notes:**
+- Creates portable executable with all dependencies included
+- No separate installation needed
+- Single executable folder can be run from anywhere
+- Binary: 50MB (onedir format for portability)
 
 ## Future Features
 
@@ -349,16 +400,75 @@ For issues, questions, or suggestions:
 
 MIT License - See LICENSE file for details
 
+## 🚀 Release to GitHub
+
+### Creating a New Release
+
+```bash
+# 1. Update version in code if needed
+# 2. Ensure builds are tested and in git
+
+# 3. Create git tag
+git tag v1.0.0
+git push origin v1.0.0
+
+# 4. GitHub Actions automatically builds and creates release with:
+#    - ATEM-Media-Generator-mac.zip
+#    - ATEM-Media-Generator-windows.zip
+
+# Alternatively, manual release upload:
+# - Go to: https://github.com/kusurix-ux/Atem-picture-tool/releases
+# - Click "Create a new release"
+# - Upload ATEM-Media-Generator-mac.zip and ATEM-Media-Generator-windows.zip
+```
+
+### CI/CD Automation
+
+The project uses GitHub Actions for automated builds:
+
+**macOS** (`.github/workflows/build-mac.yml`)
+- Triggered on: push to main/master, version tags, manual trigger
+- Creates: ATEM-Media-Generator-mac.zip
+- Artifacts: Uploaded to release on tag
+
+**Windows** (`.github/workflows/build-windows.yml`)
+- Triggered on: push to main/master, version tags, manual trigger
+- Creates: ATEM-Media-Generator-windows.zip
+- Artifacts: Uploaded to release on tag
+
+### Manual Release Steps
+
+If not using GitHub Actions:
+
+```bash
+# 1. Build both platforms
+bash build-mac.sh                    # macOS
+# On Windows machine: .\build-windows.ps1
+
+# 2. Create archives
+ditto -c -k --sequesterRsrc dist/ATEM\ Media\ Generator.app ATEM-Media-Generator-mac.zip
+
+# 3. Upload to GitHub Releases
+# Use GitHub web UI or gh CLI:
+gh release create v1.0.0 ATEM-Media-Generator-mac.zip --notes "Release notes here"
+```
+
+---
+
 ## Changelog
 
 ### v1.0.0 (2026-03-01)
-- Initial release
-- Template system with JSON support
-- Real-time preview
-- CSV batch processing
-- macOS and Windows builds
-- Comprehensive test suite
+- ✨ Initial release
+- 🖼️ Template system with JSON support
+- 🔄 Real-time preview
+- 📝 CSV batch processing
+- 🏗️ macOS .app bundle and Windows EXE builds
+- ✅ Comprehensive test suite (57 tests)
+- 📖 Complete documentation
+- 🤖 GitHub Actions CI/CD automation
 
 ---
 
 **Made with ❤️ for Blackmagic ATEM users**
+
+Repository: https://github.com/kusurix-ux/Atem-picture-tool

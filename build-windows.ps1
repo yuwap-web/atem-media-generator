@@ -52,11 +52,14 @@ Get-ChildItem "*.spec" | Remove-Item -Force 2>$null
 Write-Host "Building executable..." -ForegroundColor Yellow
 python -m PyInstaller `
     --onedir `
-    --name "cpt_editor" `
+    --name "ATEM-Media-Generator" `
     --hidden-import=PyQt5.QtWidgets `
     --hidden-import=PyQt5.QtCore `
     --hidden-import=PyQt5.QtGui `
+    --hidden-import=PyQt5.QtPrintSupport `
+    --hidden-import=PyQt5.QtSvg `
     --hidden-import=PIL `
+    --hidden-import=PIL.ImageTk `
     --collect-data=PIL `
     --windowed `
     main.py
@@ -64,19 +67,27 @@ python -m PyInstaller `
 if ($LASTEXITCODE -eq 0) {
     Write-Host ""
     Write-Host "=========================================" -ForegroundColor Green
-    Write-Host "Build successful!" -ForegroundColor Green
+    Write-Host "✅ Windows Build Successful!" -ForegroundColor Green
     Write-Host "=========================================" -ForegroundColor Green
     Write-Host ""
-    Write-Host "Executable location: dist\cpt_editor\cpt_editor.exe" -ForegroundColor Cyan
+    Write-Host "Executable location:" -ForegroundColor Cyan
+    Write-Host "  dist\ATEM-Media-Generator\ATEM-Media-Generator.exe"
     Write-Host ""
-    Write-Host "To run:" -ForegroundColor Yellow
-    Write-Host "  .\dist\cpt_editor\cpt_editor.exe"
+    Write-Host "To run the application:" -ForegroundColor Yellow
+    Write-Host "  .\dist\ATEM-Media-Generator\ATEM-Media-Generator.exe"
     Write-Host ""
     Write-Host "To create a portable zip archive:" -ForegroundColor Yellow
-    Write-Host "  powershell Compress-Archive -Path 'dist\cpt_editor' -DestinationPath 'cpt_editor-windows.zip'"
+    Write-Host "  powershell Compress-Archive -Path 'dist\ATEM-Media-Generator' -DestinationPath 'ATEM-Media-Generator-windows.zip'"
+    Write-Host ""
+    Write-Host "Application details:"
+    $exePath = "dist\ATEM-Media-Generator\ATEM-Media-Generator.exe"
+    if (Test-Path $exePath) {
+        $fileSize = (Get-Item $exePath).Length / 1MB
+        Write-Host "  Size: $([Math]::Round($fileSize, 2)) MB"
+    }
     Write-Host "=========================================" -ForegroundColor Cyan
 } else {
     Write-Host ""
-    Write-Host "Build failed! Check error messages above." -ForegroundColor Red
+    Write-Host "❌ Build failed! Check error messages above." -ForegroundColor Red
     exit 1
 }
