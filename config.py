@@ -12,7 +12,12 @@ load_dotenv()
 # Determine the base directory (works for both .app bundle and regular Python)
 if getattr(sys, 'frozen', False):
     # Running as .app bundle or PyInstaller executable
-    BASE_DIR = Path(sys.executable).parent.parent.parent / 'Resources'
+    # sys.executable: /path/to/ATEM Media Generator.app/Contents/MacOS/ATEM Media Generator
+    # We need: /path/to/ATEM Media Generator.app/Contents/Resources
+    executable_path = Path(sys.executable)
+    # Go up: MacOS -> Contents -> .app -> (get Contents/Resources)
+    app_contents = executable_path.parent.parent  # Contents directory
+    BASE_DIR = app_contents / 'Resources'
 else:
     # Running as Python script
     BASE_DIR = Path(__file__).parent
