@@ -64,19 +64,36 @@ class ImageGenerator:
                 # Load font
                 font = self._get_font(layer.font_name, layer.font_size)
 
-                # Calculate text position based on alignment
-                x, y = layer.x, layer.y
-
                 # Ensure color is a tuple (JSON deserializes as list)
                 color = tuple(layer.color) if isinstance(layer.color, list) else layer.color
 
-                # Draw text with specified color
+                # Calculate text position based on alignment
+                # Note: Pillow's align parameter only works for multi-line text
+                # For single-line text, we use anchor parameter with calculated positions
+                x, y = layer.x, layer.y
+                anchor = 'lm'  # Default: left-middle
+
+                # Map alignment to anchor parameter
+                if layer.alignment == 'center':
+                    anchor = 'mm'  # middle-middle
+                elif layer.alignment == 'right':
+                    anchor = 'rm'  # right-middle
+                else:  # 'left' or default
+                    anchor = 'lm'  # left-middle
+
+                # For center alignment, adjust x to middle of layer width
+                if layer.alignment == 'center':
+                    x = layer.x + layer.width // 2
+                elif layer.alignment == 'right':
+                    x = layer.x + layer.width
+
+                # Draw text with alignment support
                 draw.text(
                     xy=(x, y),
                     text=text,
                     font=font,
                     fill=color,  # RGBA tuple
-                    align=layer.alignment
+                    anchor=anchor  # Use anchor for proper alignment
                 )
 
             return True, None, image
