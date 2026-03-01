@@ -19,6 +19,7 @@ from csv_processor import CSVProcessor
 from ui.parameter_editor import ParameterEditorPanel
 from ui.preview_panel import PreviewPanel
 from ui.template_customizer import TemplateCustomizer
+from ui.template_generator import TemplateGeneratorWindow
 from workers.image_generator_worker import ImageGeneratorWorker
 from workers.csv_batch_worker import CSVBatchWorker
 
@@ -150,6 +151,13 @@ class ATEMMediaGeneratorApp(QMainWindow):
         export_btn = QPushButton("一括エクスポート (CSV)")
         export_btn.clicked.connect(self.on_export_csv)
         toolbar.addWidget(export_btn)
+
+        toolbar.addSeparator()
+
+        # Template generator button
+        gen_btn = QPushButton("テンプレートを作成")
+        gen_btn.clicked.connect(self.on_template_generator)
+        toolbar.addWidget(gen_btn)
 
         toolbar.addSeparator()
 
@@ -395,6 +403,11 @@ class ATEMMediaGeneratorApp(QMainWindow):
         if self.worker_thread:
             self.worker_thread.quit()
             self.worker_thread.wait()
+
+    def on_template_generator(self):
+        """Open template generator window"""
+        generator = TemplateGeneratorWindow(self)
+        generator.show()
 
     def on_settings(self):
         """Open settings dialog"""
