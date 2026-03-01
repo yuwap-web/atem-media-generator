@@ -48,6 +48,7 @@ class Config:
     WINDOW_WIDTH = 1400
     WINDOW_HEIGHT = 800
     PREVIEW_UPDATE_MODE = 'realtime'  # リアルタイム更新（パラメータ変更時に自動更新）
+    PARAMETER_INPUT_DEBOUNCE_MS = 500  # デバウンス遅延（ミリ秒）- 日本語IME対応
 
     @classmethod
     def validate(cls) -> tuple:

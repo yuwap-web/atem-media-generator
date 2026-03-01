@@ -7,10 +7,11 @@ from PyQt5.QtWidgets import (
     QTextEdit, QPushButton, QScrollArea, QFormLayout,
     QSpinBox, QColorDialog, QComboBox, QGroupBox
 )
-from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtCore import pyqtSignal, Qt, QTimer
 from PyQt5.QtGui import QFont, QColor, QPixmap
 
 from models.template import Template
+from config import Config
 
 
 class AdvancedParameterEditor(QWidget):
@@ -23,6 +24,14 @@ class AdvancedParameterEditor(QWidget):
         super().__init__()
         self.current_template = None
         self.parameter_inputs = {}
+
+        # Debounce timer for text changes (avoid rapid updates during input)
+        # This is especially important for Japanese IME compatibility
+        self.debounce_timer = QTimer()
+        self.debounce_timer.setSingleShot(True)
+        self.debounce_timer.timeout.connect(self.on_text_change_debounced)
+        self.debounce_delay = Config.PARAMETER_INPUT_DEBOUNCE_MS
+
         self.init_ui()
 
     def init_ui(self):
@@ -107,7 +116,10 @@ class AdvancedParameterEditor(QWidget):
         input_field = QLineEdit()
         input_field.setPlaceholderText(f"{param_name} を入力...")
         input_field.setMinimumHeight(32)
-        input_field.textChanged.connect(self.on_parameter_changed)
+        # Enable input method hints for better Japanese IME support
+        input_field.setAttribute(Qt.WA_InputMethodEnabled, True)
+        # Connect with debounce to avoid rapid updates during text input
+        input_field.textChanged.connect(self.on_parameter_changed_debounce)
 
         # Label with required indicator
         label_text = param_name
@@ -119,8 +131,14 @@ class AdvancedParameterEditor(QWidget):
         self.form_layout.addRow(label, input_field)
         self.parameter_inputs[param_name] = input_field
 
-    def on_parameter_changed(self):
-        """Emit parameter change signal"""
+    def on_parameter_changed_debounce(self):
+        """Handle parameter change with debounce"""
+        # Restart debounce timer
+        self.debounce_timer.stop()
+        self.debounce_timer.start(self.debounce_delay)
+
+    def on_text_change_debounced(self):
+        """Called after debounce timer expires"""
         parameters = self.get_parameters()
         self.parameter_changed.emit(parameters)
 
