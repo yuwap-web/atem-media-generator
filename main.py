@@ -48,14 +48,14 @@ class ATEMMediaGeneratorApp(QMainWindow):
         # Validate configuration
         valid, msg = Config.validate()
         if not valid:
-            QMessageBox.warning(self, "Configuration Error", msg)
+            QMessageBox.warning(self, "設定エラー", msg)
 
         # Load templates
         self.load_templates()
 
     def init_ui(self):
         """Initialize user interface"""
-        self.setWindowTitle("ATEM Media File Generator")
+        self.setWindowTitle("ATEM メディアファイルジェネレーター")
         self.setGeometry(100, 100, 1600, 900)
 
         # Create central widget and main layout
@@ -87,7 +87,7 @@ class ATEMMediaGeneratorApp(QMainWindow):
         self.create_toolbar()
 
         # Create status bar
-        self.statusBar().showMessage("Ready")
+        self.statusBar().showMessage("準備完了")
 
     def create_left_panel(self) -> QWidget:
         """Create left panel with template list"""
@@ -95,7 +95,7 @@ class ATEMMediaGeneratorApp(QMainWindow):
         layout = QVBoxLayout(widget)
 
         # Title label
-        title = QLabel("Templates")
+        title = QLabel("テンプレート")
         layout.addWidget(title)
 
         # Template list
@@ -104,7 +104,7 @@ class ATEMMediaGeneratorApp(QMainWindow):
         layout.addWidget(self.template_list)
 
         # Refresh button
-        refresh_btn = QPushButton("Refresh Templates")
+        refresh_btn = QPushButton("テンプレートを更新")
         refresh_btn.clicked.connect(self.load_templates)
         layout.addWidget(refresh_btn)
 
@@ -136,37 +136,37 @@ class ATEMMediaGeneratorApp(QMainWindow):
 
     def create_toolbar(self):
         """Create toolbar with action buttons"""
-        toolbar = QToolBar("Actions")
+        toolbar = QToolBar("アクション")
         self.addToolBar(toolbar)
 
         # Save button
-        save_btn = QPushButton("Save PNG")
+        save_btn = QPushButton("PNGを保存")
         save_btn.clicked.connect(self.on_save_png)
         toolbar.addWidget(save_btn)
 
         toolbar.addSeparator()
 
         # Export CSV button
-        export_btn = QPushButton("Batch Export (CSV)")
+        export_btn = QPushButton("一括エクスポート (CSV)")
         export_btn.clicked.connect(self.on_export_csv)
         toolbar.addWidget(export_btn)
 
         toolbar.addSeparator()
 
         # Settings button
-        settings_btn = QPushButton("Settings")
+        settings_btn = QPushButton("設定")
         settings_btn.clicked.connect(self.on_settings)
         toolbar.addWidget(settings_btn)
 
         toolbar.addSeparator()
 
         # Status label
-        self.status_label = QLabel("Ready")
+        self.status_label = QLabel("準備完了")
         toolbar.addWidget(self.status_label)
 
     def load_templates(self):
         """Load templates from template directory"""
-        self.statusBar().showMessage("Loading templates...")
+        self.statusBar().showMessage("テンプレート読込中...")
         self.template_list.clear()
 
         success, error_msg, templates = self.template_manager.load_all_templates()
@@ -177,18 +177,18 @@ class ATEMMediaGeneratorApp(QMainWindow):
                 item.setData(Qt.UserRole, template)
                 self.template_list.addItem(item)
 
-            self.statusBar().showMessage(f"Loaded {len(templates)} templates")
+            self.statusBar().showMessage(f"{len(templates)}個のテンプレートを読込")
         elif templates:
             # Partial success
             for template in templates:
                 item = QListWidgetItem(f"{template.name} ({template.template_type})")
                 item.setData(Qt.UserRole, template)
                 self.template_list.addItem(item)
-            self.statusBar().showMessage(f"Loaded {len(templates)} templates (with warnings)")
+            self.statusBar().showMessage(f"{len(templates)}個のテンプレートを読込（警告あり）")
         else:
             # No templates found
-            error_msg = error_msg or "No templates found"
-            self.statusBar().showMessage(f"Warning: {error_msg}")
+            error_msg = error_msg or "テンプレートが見つかりません"
+            self.statusBar().showMessage(f"警告: {error_msg}")
             # Don't show dialog - just warn in status bar
 
     def on_template_selected(self, item: QListWidgetItem):
@@ -202,7 +202,7 @@ class ATEMMediaGeneratorApp(QMainWindow):
         # Load template into customizer
         self.template_customizer.load_template(self.current_template)
 
-        self.statusBar().showMessage(f"Template: {self.current_template.name}")
+        self.statusBar().showMessage(f"テンプレート: {self.current_template.name}")
 
         # Generate preview with default parameters
         self.generate_preview()
@@ -227,7 +227,7 @@ class ATEMMediaGeneratorApp(QMainWindow):
 
         # Disable UI during generation
         self.parameter_editor.setEnabled(False)
-        self.statusBar().showMessage("Generating preview...")
+        self.statusBar().showMessage("プレビュー生成中...")
 
         # Create worker thread
         self.worker_thread = QThread()
@@ -249,7 +249,7 @@ class ATEMMediaGeneratorApp(QMainWindow):
         # Display preview
         self.preview_panel.display_image(image)
 
-        self.statusBar().showMessage("Preview ready")
+        self.statusBar().showMessage("プレビュー準備完了")
         self.parameter_editor.setEnabled(True)
 
         # Cleanup thread
@@ -270,7 +270,7 @@ class ATEMMediaGeneratorApp(QMainWindow):
     def on_save_png(self):
         """Save current preview as PNG"""
         if not self.current_template or self.preview_panel.current_image is None:
-            QMessageBox.warning(self, "Warning", "No image to save. Please generate an image first.")
+            QMessageBox.warning(self, "警告", "保存する画像がありません。まず画像を生成してください。")
             return
 
         # Open save dialog
@@ -281,9 +281,9 @@ class ATEMMediaGeneratorApp(QMainWindow):
 
         filepath, _ = QFileDialog.getSaveFileName(
             self,
-            "Save PNG Image",
+            "PNGイメージを保存",
             str(Path(Config.OUTPUT_DIR) / filename),
-            "PNG Images (*.png)"
+            "PNGファイル (*.png)"
         )
 
         if not filepath:
@@ -296,10 +296,10 @@ class ATEMMediaGeneratorApp(QMainWindow):
         )
 
         if success:
-            self.statusBar().showMessage(f"Saved: {Path(filepath).name}")
-            QMessageBox.information(self, "Success", f"Image saved to:\n{filepath}")
+            self.statusBar().showMessage(f"保存されました: {Path(filepath).name}")
+            QMessageBox.information(self, "成功", f"画像を保存しました:\n{filepath}")
         else:
-            QMessageBox.critical(self, "Error", f"Failed to save image:\n{error_msg}")
+            QMessageBox.critical(self, "エラー", f"画像の保存に失敗しました:\n{error_msg}")
 
     def on_export_csv(self):
         """Open CSV batch export dialog"""
@@ -307,17 +307,17 @@ class ATEMMediaGeneratorApp(QMainWindow):
         if not self.current_template:
             QMessageBox.warning(
                 self,
-                "Warning",
-                "Please select a template first before batch processing."
+                "警告",
+                "先にテンプレートを選択してください。"
             )
             return
 
         # Open file dialog to select CSV file
         filepath, _ = QFileDialog.getOpenFileName(
             self,
-            "Open CSV File for Batch Processing",
+            "一括処理用CSVファイルを開く",
             str(Path.home()),
-            "CSV Files (*.csv)"
+            "CSVファイル (*.csv)"
         )
 
         if not filepath:
@@ -326,10 +326,10 @@ class ATEMMediaGeneratorApp(QMainWindow):
         # Confirm batch processing
         reply = QMessageBox.question(
             self,
-            "Confirm Batch Processing",
-            f"Process CSV file with template: {self.current_template.name}?\n\n"
-            f"File: {Path(filepath).name}\n"
-            f"Output: {Config.OUTPUT_DIR}",
+            "一括処理を確認",
+            f"このテンプレートでCSVファイルを処理してもよろしいですか?: {self.current_template.name}\n\n"
+            f"ファイル: {Path(filepath).name}\n"
+            f"出力: {Config.OUTPUT_DIR}",
             QMessageBox.Yes | QMessageBox.No
         )
 
@@ -346,7 +346,7 @@ class ATEMMediaGeneratorApp(QMainWindow):
         Args:
             csv_filepath: Path to CSV file
         """
-        self.statusBar().showMessage(f"Processing CSV: {Path(csv_filepath).name}")
+        self.statusBar().showMessage(f"CSV処理中: {Path(csv_filepath).name}")
 
         # Create worker thread
         self.worker_thread = QThread()
@@ -366,14 +366,14 @@ class ATEMMediaGeneratorApp(QMainWindow):
 
     def on_csv_batch_finished(self, num_generated: int):
         """Handle CSV batch processing complete"""
-        message = f"Batch processing complete!\nGenerated {num_generated} images."
+        message = f"一括処理が完了しました！\n{num_generated}個の画像を生成しました。"
         self.statusBar().showMessage(message)
 
         QMessageBox.information(
             self,
-            "Batch Processing Complete",
+            "一括処理完了",
             f"{message}\n\n"
-            f"Output directory: {Config.OUTPUT_DIR}"
+            f"出力ディレクトリ: {Config.OUTPUT_DIR}"
         )
 
         # Cleanup thread
@@ -383,12 +383,12 @@ class ATEMMediaGeneratorApp(QMainWindow):
 
     def on_csv_batch_error(self, error_msg: str):
         """Handle CSV batch processing error"""
-        self.statusBar().showMessage(f"Batch processing failed")
+        self.statusBar().showMessage(f"一括処理に失敗しました")
 
         QMessageBox.critical(
             self,
-            "Batch Processing Error",
-            f"An error occurred during batch processing:\n\n{error_msg}"
+            "一括処理エラー",
+            f"一括処理中にエラーが発生しました:\n\n{error_msg}"
         )
 
         # Cleanup thread
@@ -401,8 +401,8 @@ class ATEMMediaGeneratorApp(QMainWindow):
         # TODO: Implement settings dialog
         QMessageBox.information(
             self,
-            "Settings",
-            "Settings dialog will be implemented in future version"
+            "設定",
+            "設定ダイアログは今後のバージョンで実装される予定です"
         )
 
     def closeEvent(self, event):

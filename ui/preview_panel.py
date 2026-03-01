@@ -26,7 +26,7 @@ class PreviewPanel(QWidget):
         layout = QVBoxLayout(self)
 
         # Title
-        title = QLabel("Preview")
+        title = QLabel("プレビュー")
         title_font = QFont()
         title_font.setPointSize(12)
         title_font.setBold(True)
@@ -50,7 +50,7 @@ class PreviewPanel(QWidget):
 
     def show_placeholder(self):
         """Show placeholder image"""
-        self.preview_label.setText("No preview available\n\nSelect a template and enter parameters to generate preview")
+        self.preview_label.setText("プレビューはありません\n\nテンプレートを選択してパラメータを入力し、プレビューを生成してください")
         self.preview_label.setMinimumHeight(400)
 
     def display_image(self, image: Image.Image):
@@ -95,7 +95,7 @@ class PreviewPanel(QWidget):
             self.preview_label.setPixmap(pixmap)
 
         except Exception as e:
-            self.preview_label.setText(f"Error displaying image: {str(e)}")
+            self.preview_label.setText(f"画像表示エラー: {str(e)}")
 
     def clear_preview(self):
         """Clear preview"""

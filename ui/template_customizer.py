@@ -72,7 +72,7 @@ class TextLayerEditor(QGroupBox):
 
         # Font name - use cached font list for performance
         font_layout = QHBoxLayout()
-        font_layout.addWidget(QLabel("Font:"))
+        font_layout.addWidget(QLabel("フォント:"))
         self.font_combo = QComboBox()
 
         # Get cached font list (built once, reused for all instances)
@@ -96,7 +96,7 @@ class TextLayerEditor(QGroupBox):
 
         # Font size
         size_layout = QHBoxLayout()
-        size_layout.addWidget(QLabel("Size:"))
+        size_layout.addWidget(QLabel("サイズ:"))
         self.size_spin = QSpinBox()
         self.size_spin.setMinimum(8)
         self.size_spin.setMaximum(200)
@@ -109,10 +109,14 @@ class TextLayerEditor(QGroupBox):
 
         # Alignment
         align_layout = QHBoxLayout()
-        align_layout.addWidget(QLabel("Alignment:"))
+        align_layout.addWidget(QLabel("配置:"))
         self.align_combo = QComboBox()
-        self.align_combo.addItems(["left", "center", "right"])
-        self.align_combo.setCurrentText(self.layer.alignment)
+        self.align_combo.addItems(["左", "中央", "右"])
+        # Map UI display values back to internal format
+        alignment_map = {"左": "left", "中央": "center", "右": "right"}
+        reverse_map = {"left": "左", "center": "中央", "right": "右"}
+        current_display = reverse_map.get(self.layer.alignment, "左")
+        self.align_combo.setCurrentText(current_display)
         self.align_combo.currentTextChanged.connect(self.on_changed)
         align_layout.addWidget(self.align_combo)
         align_layout.addStretch()
@@ -120,7 +124,7 @@ class TextLayerEditor(QGroupBox):
 
         # Color picker
         color_layout = QHBoxLayout()
-        color_layout.addWidget(QLabel("Color:"))
+        color_layout.addWidget(QLabel("色:"))
         self.color_button = QPushButton()
         self.color_button.setMaximumWidth(100)
         self.update_color_button()
@@ -128,6 +132,59 @@ class TextLayerEditor(QGroupBox):
         color_layout.addWidget(self.color_button)
         color_layout.addStretch()
         layout.addLayout(color_layout)
+
+        # Position controls
+        # X Position
+        x_layout = QHBoxLayout()
+        x_layout.addWidget(QLabel("X位置:"))
+        self.x_spin = QSpinBox()
+        self.x_spin.setMinimum(0)
+        self.x_spin.setMaximum(1920)
+        self.x_spin.setValue(self.layer.x)
+        self.x_spin.setSuffix(" px")
+        self.x_spin.valueChanged.connect(self.on_changed)
+        x_layout.addWidget(self.x_spin)
+        x_layout.addStretch()
+        layout.addLayout(x_layout)
+
+        # Y Position
+        y_layout = QHBoxLayout()
+        y_layout.addWidget(QLabel("Y位置:"))
+        self.y_spin = QSpinBox()
+        self.y_spin.setMinimum(0)
+        self.y_spin.setMaximum(1080)
+        self.y_spin.setValue(self.layer.y)
+        self.y_spin.setSuffix(" px")
+        self.y_spin.valueChanged.connect(self.on_changed)
+        y_layout.addWidget(self.y_spin)
+        y_layout.addStretch()
+        layout.addLayout(y_layout)
+
+        # Width
+        width_layout = QHBoxLayout()
+        width_layout.addWidget(QLabel("幅:"))
+        self.width_spin = QSpinBox()
+        self.width_spin.setMinimum(50)
+        self.width_spin.setMaximum(1920)
+        self.width_spin.setValue(self.layer.width)
+        self.width_spin.setSuffix(" px")
+        self.width_spin.valueChanged.connect(self.on_changed)
+        width_layout.addWidget(self.width_spin)
+        width_layout.addStretch()
+        layout.addLayout(width_layout)
+
+        # Height
+        height_layout = QHBoxLayout()
+        height_layout.addWidget(QLabel("高さ:"))
+        self.height_spin = QSpinBox()
+        self.height_spin.setMinimum(20)
+        self.height_spin.setMaximum(500)
+        self.height_spin.setValue(self.layer.height)
+        self.height_spin.setSuffix(" px")
+        self.height_spin.valueChanged.connect(self.on_changed)
+        height_layout.addWidget(self.height_spin)
+        height_layout.addStretch()
+        layout.addLayout(height_layout)
 
         self.setLayout(layout)
 
@@ -144,7 +201,7 @@ class TextLayerEditor(QGroupBox):
         r, g, b, a = self.layer.color
         initial_color = QColor(r, g, b, a)
 
-        color = QColorDialog.getColor(initial_color, self, "Select Text Color")
+        color = QColorDialog.getColor(initial_color, self, "テキストの色を選択")
         if color.isValid():
             self.layer.color = (color.red(), color.green(), color.blue(), 255)
             self.update_color_button()
@@ -155,11 +212,20 @@ class TextLayerEditor(QGroupBox):
         # Update layer attributes directly
         self.layer.font_name = self.font_combo.currentText()
         self.layer.font_size = self.size_spin.value()
-        self.layer.alignment = self.align_combo.currentText()
+        # Map Japanese display value back to internal format
+        alignment_map = {"左": "left", "中央": "center", "右": "right"}
+        display_value = self.align_combo.currentText()
+        self.layer.alignment = alignment_map.get(display_value, "left")
+
+        # Update position and size
+        self.layer.x = self.x_spin.value()
+        self.layer.y = self.y_spin.value()
+        self.layer.width = self.width_spin.value()
+        self.layer.height = self.height_spin.value()
         # Note: color is updated separately in on_color_picked
 
         # Debug output for troubleshooting
-        # print(f"Layer '{self.layer.name}' updated: font={self.layer.font_name}, size={self.layer.font_size}")
+        # print(f"Layer '{self.layer.name}' updated: font={self.layer.font_name}, size={self.layer.font_size}, x={self.layer.x}, y={self.layer.y}")
 
         # Signal parent that layer changed
         self.changed.emit()
@@ -186,7 +252,7 @@ class TemplateCustomizer(QWidget):
         layout = QVBoxLayout()
 
         # Title
-        title = QLabel("Template Customizer")
+        title = QLabel("テンプレートカスタマイザー")
         title_font = title.font()
         title_font.setPointSize(11)
         title_font.setBold(True)
@@ -194,7 +260,7 @@ class TemplateCustomizer(QWidget):
         layout.addWidget(title)
 
         # Info
-        info = QLabel("Modify text layer attributes in real-time")
+        info = QLabel("テキストレイヤーの属性をリアルタイムで編集")
         info.setStyleSheet("color: #666; font-size: 10px;")
         layout.addWidget(info)
 
@@ -213,11 +279,11 @@ class TemplateCustomizer(QWidget):
         # Buttons
         button_layout = QHBoxLayout()
 
-        reset_btn = QPushButton("Reset to Original")
+        reset_btn = QPushButton("元に戻す")
         reset_btn.clicked.connect(self.reset_template)
         button_layout.addWidget(reset_btn)
 
-        apply_btn = QPushButton("Apply Changes")
+        apply_btn = QPushButton("変更を適用")
         apply_btn.setStyleSheet("background-color: #4CAF50; color: white;")
         apply_btn.clicked.connect(self.apply_changes)
         button_layout.addWidget(apply_btn)

@@ -41,7 +41,7 @@ class ParameterEditorPanel(QWidget):
         layout = QVBoxLayout(self)
 
         # Title
-        title = QLabel("Parameters")
+        title = QLabel("パラメータ")
         title_font = QFont()
         title_font.setPointSize(12)
         title_font.setBold(True)
@@ -62,12 +62,12 @@ class ParameterEditorPanel(QWidget):
         button_layout = QHBoxLayout()
 
         # Clear button
-        clear_btn = QPushButton("Clear All")
+        clear_btn = QPushButton("すべてクリア")
         clear_btn.clicked.connect(self.clear_all)
         button_layout.addWidget(clear_btn)
 
         # Reset button
-        reset_btn = QPushButton("Reset")
+        reset_btn = QPushButton("リセット")
         reset_btn.clicked.connect(self.reset_values)
         button_layout.addWidget(reset_btn)
 
