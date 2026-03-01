@@ -56,13 +56,20 @@ class Config:
         Returns:
             (validation_success, error_message)
         """
+        # Create output directory if it doesn't exist
         if not os.path.exists(cls.OUTPUT_DIR):
             try:
                 os.makedirs(cls.OUTPUT_DIR, exist_ok=True)
             except Exception as e:
                 return False, f"Failed to create output directory: {str(e)}"
 
+        # Template directory validation - more lenient
         if not os.path.exists(cls.TEMPLATE_DIR):
-            return False, f"Template directory not found: {cls.TEMPLATE_DIR}"
+            # Try to create it
+            try:
+                os.makedirs(cls.TEMPLATE_DIR, exist_ok=True)
+            except Exception as e:
+                # Don't fail - templates might be loaded from elsewhere
+                pass
 
         return True, "Configuration OK"

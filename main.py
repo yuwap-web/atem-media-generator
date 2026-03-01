@@ -147,16 +147,25 @@ class ATEMMediaGeneratorApp(QMainWindow):
 
         success, error_msg, templates = self.template_manager.load_all_templates()
 
-        if success:
+        if success and templates:
             for template in templates:
                 item = QListWidgetItem(f"{template.name} ({template.template_type})")
                 item.setData(Qt.UserRole, template)
                 self.template_list.addItem(item)
 
             self.statusBar().showMessage(f"Loaded {len(templates)} templates")
+        elif templates:
+            # Partial success
+            for template in templates:
+                item = QListWidgetItem(f"{template.name} ({template.template_type})")
+                item.setData(Qt.UserRole, template)
+                self.template_list.addItem(item)
+            self.statusBar().showMessage(f"Loaded {len(templates)} templates (with warnings)")
         else:
-            QMessageBox.critical(self, "Error", f"Failed to load templates: {error_msg}")
-            self.statusBar().showMessage("Error loading templates")
+            # No templates found
+            error_msg = error_msg or "No templates found"
+            self.statusBar().showMessage(f"Warning: {error_msg}")
+            # Don't show dialog - just warn in status bar
 
     def on_template_selected(self, item: QListWidgetItem):
         """Handle template selection"""
