@@ -51,10 +51,20 @@ jobs:
           --windowed `
           main.py
 
+    - name: Check build output
+      run: |
+        dir dist
+        dir "dist\ATEM-Media-Generator"
+
     - name: Create portable .zip archive
       run: |
-        powershell -Command "Compress-Archive -Path 'dist\ATEM-Media-Generator' -DestinationPath 'ATEM-Media-Generator-windows.zip'"
-        dir /s ATEM-Media-Generator-windows.zip
+        if (Test-Path 'dist\ATEM-Media-Generator') {
+          Compress-Archive -Path 'dist\ATEM-Media-Generator' -DestinationPath 'ATEM-Media-Generator-windows.zip' -Force
+          Get-Item 'ATEM-Media-Generator-windows.zip'
+        } else {
+          Write-Error "Build directory not found"
+          exit 1
+        }
 
     - name: Upload to Release (if tagged)
       if: startsWith(github.ref, 'refs/tags/')
