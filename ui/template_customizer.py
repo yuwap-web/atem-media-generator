@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (
     QPushButton, QGroupBox, QScrollArea, QColorDialog, QTableWidget,
     QTableWidgetItem, QHeaderView, QFileDialog, QSlider, QLineEdit, QFormLayout
 )
-from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtCore import pyqtSignal, Qt, QTimer
 from PyQt5.QtGui import QColor, QIcon
 from pathlib import Path
 
@@ -23,6 +23,16 @@ class TextLayerEditor(QGroupBox):
     # Class-level cache for available fonts (shared across all instances)
     _font_list_cache = None
     _priority_fonts = [
+        # Japanese fonts (優先順位 - 日本語フォント)
+        "Hiragino Sans",
+        "ヒラギノ角ゴ Pro",
+        "Hiragino Mincho",
+        "ヒラギノ明朝 Pro",
+        "YuGothic",
+        "YuMincho",
+        "AppleGothic",
+        "Apple SD Gothic Neo",
+        # English fonts
         "Helvetica", "Arial", "Menlo", "Monaco",
         "Times New Roman", "Georgia", "Courier New",
         "Arial Unicode"
@@ -371,6 +381,13 @@ class TemplateCustomizer(QWidget):
         super().__init__()
         self.current_template = None
         self.layer_editors = []
+
+        # Debounce timer to prevent excessive preview regeneration
+        self.debounce_timer = QTimer()
+        self.debounce_timer.setSingleShot(True)
+        self.debounce_timer.timeout.connect(self.on_debounce_timeout)
+        self.debounce_delay = 500  # milliseconds
+
         self.init_ui()
 
     def init_ui(self):
@@ -458,7 +475,7 @@ class TemplateCustomizer(QWidget):
         self.editors_layout.addStretch()
 
     def on_layer_changed(self):
-        """Handle layer attribute change"""
+        """Handle layer attribute change - debounced to prevent excessive updates"""
         # Sync all layers from editors to template (important for multiple layers!)
         # Each TextLayerEditor directly modifies its layer object
         # We need to ensure all modified layers are in the template
@@ -477,7 +494,14 @@ class TemplateCustomizer(QWidget):
         #     for i, layer in enumerate(self.current_template.layers):
         #         print(f"Layer {i} ({layer.name}): font={layer.font_name}, size={layer.font_size}")
 
-        # Emit signal with modified template - triggers preview regeneration
+        # Restart debounce timer - will emit signal after delay if no more changes
+        if self.debounce_timer.isActive():
+            self.debounce_timer.stop()
+        self.debounce_timer.start(self.debounce_delay)
+
+    def on_debounce_timeout(self):
+        """Called when debounce timer expires - emit signal to trigger preview update"""
+        print(f"[DEBUG] Debounce timeout - emitting template_modified signal")
         if self.current_template:
             self.template_modified.emit(self.current_template)
 
