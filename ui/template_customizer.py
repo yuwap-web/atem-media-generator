@@ -20,6 +20,44 @@ class TextLayerEditor(QGroupBox):
 
     changed = pyqtSignal()
 
+    # Class-level cache for available fonts (shared across all instances)
+    _font_list_cache = None
+    _priority_fonts = [
+        "Helvetica", "Arial", "Menlo", "Monaco",
+        "Times New Roman", "Georgia", "Courier New",
+        "Arial Unicode"
+    ]
+
+    @classmethod
+    def _get_cached_font_list(cls):
+        """Get cached font list or create it once"""
+        if cls._font_list_cache is None:
+            font_manager = get_font_manager()
+            available_fonts = font_manager.get_available_fonts()
+
+            # Build prioritized font list
+            added_fonts = set()
+            cached_list = []
+
+            # Add priority fonts first
+            for font in cls._priority_fonts:
+                for available in available_fonts:
+                    if font.lower() in available.lower():
+                        if available not in added_fonts:
+                            cached_list.append(available)
+                            added_fonts.add(available)
+                        break
+
+            # Add remaining fonts
+            for font in available_fonts:
+                if font not in added_fonts:
+                    cached_list.append(font)
+                    added_fonts.add(font)
+
+            cls._font_list_cache = cached_list
+
+        return cls._font_list_cache
+
     def __init__(self, layer):
         """Initialize layer editor"""
         super().__init__(f"Layer: {layer.name}")
@@ -32,38 +70,16 @@ class TextLayerEditor(QGroupBox):
         """Initialize UI"""
         layout = QVBoxLayout()
 
-        # Font name - get available fonts from font manager
+        # Font name - use cached font list for performance
         font_layout = QHBoxLayout()
         font_layout.addWidget(QLabel("Font:"))
         self.font_combo = QComboBox()
 
-        # Get available fonts from font manager (intelligent detection)
-        font_manager = get_font_manager()
-        available_fonts = font_manager.get_available_fonts()
+        # Get cached font list (built once, reused for all instances)
+        cached_fonts = self._get_cached_font_list()
 
-        # Prioritize common fonts at the top
-        priority_fonts = [
-            "Helvetica", "Arial", "Menlo", "Monaco",
-            "Times New Roman", "Georgia", "Courier New",
-            "Arial Unicode"
-        ]
-
-        # Add priority fonts first if available
-        added_fonts = set()
-        for font in priority_fonts:
-            # Find exact or partial match
-            for available in available_fonts:
-                if font.lower() in available.lower():
-                    if available not in added_fonts:
-                        self.font_combo.addItem(available)
-                        added_fonts.add(available)
-                    break
-
-        # Add remaining fonts
-        for font in available_fonts:
-            if font not in added_fonts:
-                self.font_combo.addItem(font)
-                added_fonts.add(font)
+        # Add all fonts to combo box at once (faster than individual addItem)
+        self.font_combo.addItems(cached_fonts)
 
         # Set current font or fallback
         try:
