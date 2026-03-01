@@ -12,6 +12,7 @@ from PyQt5.QtGui import QColor, QIcon
 from pathlib import Path
 
 from models.template import Template
+from font_manager import get_font_manager
 
 
 class TextLayerEditor(QGroupBox):
@@ -31,17 +32,47 @@ class TextLayerEditor(QGroupBox):
         """Initialize UI"""
         layout = QVBoxLayout()
 
-        # Font name
+        # Font name - get available fonts from font manager
         font_layout = QHBoxLayout()
         font_layout.addWidget(QLabel("Font:"))
         self.font_combo = QComboBox()
-        self.font_combo.addItems([
-            "Helvetica", "Arial", "Menlo", "Courier New",
-            "Times New Roman", "Georgia", "Monaco",
-            "ヒラギノ角ゴシック", "ヒラギノゴシック",
+
+        # Get available fonts from font manager (intelligent detection)
+        font_manager = get_font_manager()
+        available_fonts = font_manager.get_available_fonts()
+
+        # Prioritize common fonts at the top
+        priority_fonts = [
+            "Helvetica", "Arial", "Menlo", "Monaco",
+            "Times New Roman", "Georgia", "Courier New",
             "Arial Unicode"
-        ])
-        self.font_combo.setCurrentText(self.layer.font_name)
+        ]
+
+        # Add priority fonts first if available
+        added_fonts = set()
+        for font in priority_fonts:
+            # Find exact or partial match
+            for available in available_fonts:
+                if font.lower() in available.lower():
+                    if available not in added_fonts:
+                        self.font_combo.addItem(available)
+                        added_fonts.add(available)
+                    break
+
+        # Add remaining fonts
+        for font in available_fonts:
+            if font not in added_fonts:
+                self.font_combo.addItem(font)
+                added_fonts.add(font)
+
+        # Set current font or fallback
+        try:
+            self.font_combo.setCurrentText(self.layer.font_name)
+        except:
+            # If font not found, set to first available
+            if self.font_combo.count() > 0:
+                self.font_combo.setCurrentIndex(0)
+
         self.font_combo.currentTextChanged.connect(self.on_changed)
         font_layout.addWidget(self.font_combo)
         font_layout.addStretch()

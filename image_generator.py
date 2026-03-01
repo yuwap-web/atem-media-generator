@@ -9,6 +9,7 @@ import os
 from datetime import datetime
 from config import Config
 from models.template import Template
+from font_manager import get_font_manager
 
 
 class ImageGenerator:
@@ -21,8 +22,8 @@ class ImageGenerator:
         self.default_font = Config.DEFAULT_FONT
         self.fonts_dir = Path(Config.CUSTOM_FONTS_DIR)
 
-        # Font cache to avoid repeated loading
-        self.font_cache = {}
+        # Use centralized font manager
+        self.font_manager = get_font_manager()
 
     def generate(self, template: Template, parameters: Dict[str, str]) -> Tuple[bool, Optional[str], Optional[Image.Image]]:
         """
@@ -85,97 +86,31 @@ class ImageGenerator:
 
     def _get_font(self, font_name: str, font_size: int) -> ImageFont.FreeTypeFont:
         """
-        Get font object with caching
+        Get font object with intelligent fallback
 
         Args:
-            font_name: Font name or path
+            font_name: Font name to load
             font_size: Font size in pixels
 
         Returns:
-            PIL ImageFont object
+            PIL ImageFont object (with intelligent fallback)
         """
-        cache_key = f"{font_name}_{font_size}"
-
-        if cache_key in self.font_cache:
-            return self.font_cache[cache_key]
-
         try:
-            # Try loading from custom fonts directory first
-            font_path = self.fonts_dir / f"{font_name}.ttf"
-            if font_path.exists():
-                font = ImageFont.truetype(str(font_path), font_size)
-                self.font_cache[cache_key] = font
-                return font
+            # Try custom fonts directory first
+            custom_font_path = self.fonts_dir / f"{font_name}.ttf"
+            if custom_font_path.exists():
+                try:
+                    font = ImageFont.truetype(str(custom_font_path), font_size)
+                    return font
+                except Exception:
+                    pass  # Fall through to font manager
 
-            # Try system fonts (common paths with multiple extensions)
-            # macOS Japanese fonts added
-            system_font_paths = [
-                # macOS - multiple formats
-                f"/Library/Fonts/{font_name}.ttf",
-                f"/Library/Fonts/{font_name}.otf",
-                f"/System/Library/Fonts/{font_name}.ttf",
-                f"/System/Library/Fonts/{font_name}.otf",
-                f"/System/Library/Fonts/{font_name}.dfont",
-                f"/System/Library/Fonts/{font_name}.ttc",
-                # macOS Helvetica aliases
-                f"/Library/Fonts/Helvetica.ttc",
-                f"/System/Library/Fonts/Helvetica.ttc",
-                # macOS Japanese fonts (built-in)
-                f"/Library/Fonts/ヒラギノ角ゴシック W4.ttc",
-                f"/Library/Fonts/ヒラギノ角ゴシック W5.ttc",
-                f"/Library/Fonts/ヒラギノ角ゴシック W6.ttc",
-                f"/Library/Fonts/ヒラギノ角ゴシック W7.ttc",
-                f"/Library/Fonts/ヒラギノ角ゴシック W8.ttc",
-                f"/Library/Fonts/ヒラギノ角ゴシック W9.ttc",
-                f"/Library/Fonts/ヒラギノゴシック W4.ttc",
-                f"/Library/Fonts/ヒラギノゴシック W5.ttc",
-                f"/Library/Fonts/ヒラギノゴシック W6.ttc",
-                f"/Library/Fonts/ヒラギノゴシック W7.ttc",
-                f"/Library/Fonts/ヒラギノゴシック W8.ttc",
-                f"/System/Library/Fonts/ヒラギノ角ゴシック W4.ttc",
-                f"/System/Library/Fonts/ヒラギノ角ゴシック W5.ttc",
-                f"/System/Library/Fonts/ヒラギノ角ゴシック W6.ttc",
-                f"/System/Library/Fonts/ヒラギノ角ゴシック W7.ttc",
-                f"/System/Library/Fonts/ヒラギノ角ゴシック W8.ttc",
-                f"/System/Library/Fonts/ヒラギノ角ゴシック W9.ttc",
-                f"/System/Library/Fonts/ヒラギノゴシック W4.ttc",
-                f"/System/Library/Fonts/ヒラギノゴシック W5.ttc",
-                f"/System/Library/Fonts/ヒラギノゴシック W6.ttc",
-                f"/System/Library/Fonts/ヒラギノゴシック W7.ttc",
-                f"/System/Library/Fonts/ヒラギノゴシック W8.ttc",
-                # macOS standard alternative Japanese fonts
-                f"/Library/Fonts/Arial Unicode.ttf",
-                f"/System/Library/Fonts/Arial Unicode.ttf",
-                # Linux
-                f"/usr/share/fonts/truetype/{font_name.lower()}/{font_name}.ttf",
-                f"/usr/share/fonts/opentype/{font_name.lower()}/{font_name}.otf",
-                # Linux Japanese fonts
-                f"/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
-                f"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-                # Windows
-                f"C:\\Windows\\Fonts\\{font_name}.ttf",
-                f"C:\\Windows\\Fonts\\{font_name}.otf",
-                # Windows Japanese fonts
-                f"C:\\Windows\\Fonts\\meiryo.ttc",
-                f"C:\\Windows\\Fonts\\msmincho.ttc",
-            ]
-
-            for path in system_font_paths:
-                if os.path.exists(path):
-                    try:
-                        font = ImageFont.truetype(path, font_size)
-                        self.font_cache[cache_key] = font
-                        return font
-                    except Exception:
-                        continue  # Try next path
-
-            # Fallback: use default font
-            font = ImageFont.load_default()
-            self.font_cache[cache_key] = font
+            # Use font manager for system fonts (with intelligent matching)
+            font = self.font_manager.load_font(font_name, font_size)
             return font
 
         except Exception as e:
-            # Return default font on error
+            # Final fallback: use default font
             return ImageFont.load_default()
 
     def save_png(self, image: Image.Image, filepath: str) -> Tuple[bool, Optional[str]]:
