@@ -22,8 +22,9 @@ class TextLayerEditor(QGroupBox):
     def __init__(self, layer):
         """Initialize layer editor"""
         super().__init__(f"Layer: {layer.name}")
-        self.layer = layer
+        self.layer = layer  # Keep reference to actual layer object
         self.original_layer = layer
+        self.layer_name = layer.name  # Store name for reference
         self.init_ui()
 
     def init_ui(self):
@@ -103,10 +104,17 @@ class TextLayerEditor(QGroupBox):
             self.on_changed()
 
     def on_changed(self):
-        """Handle attribute change"""
+        """Handle attribute change - update layer object immediately"""
+        # Update layer attributes directly
         self.layer.font_name = self.font_combo.currentText()
         self.layer.font_size = self.size_spin.value()
         self.layer.alignment = self.align_combo.currentText()
+        # Note: color is updated separately in on_color_picked
+
+        # Debug output for troubleshooting
+        # print(f"Layer '{self.layer.name}' updated: font={self.layer.font_name}, size={self.layer.font_size}")
+
+        # Signal parent that layer changed
         self.changed.emit()
 
     def get_modified_layer(self):
@@ -198,7 +206,25 @@ class TemplateCustomizer(QWidget):
 
     def on_layer_changed(self):
         """Handle layer attribute change"""
-        # Emit signal with modified template
+        # Sync all layers from editors to template (important for multiple layers!)
+        # Each TextLayerEditor directly modifies its layer object
+        # We need to ensure all modified layers are in the template
+        if self.current_template and self.layer_editors:
+            updated_layers = []
+            for editor in self.layer_editors:
+                # Get the modified layer from editor (it's already modified in place)
+                modified_layer = editor.get_modified_layer()
+                updated_layers.append(modified_layer)
+
+            # Replace all layers in template with updated versions
+            self.current_template.layers = updated_layers
+
+        # Debug: Print which layers have been updated
+        # if self.current_template:
+        #     for i, layer in enumerate(self.current_template.layers):
+        #         print(f"Layer {i} ({layer.name}): font={layer.font_name}, size={layer.font_size}")
+
+        # Emit signal with modified template - triggers preview regeneration
         if self.current_template:
             self.template_modified.emit(self.current_template)
 
