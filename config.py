@@ -2,27 +2,37 @@
 ATEM Media File Generator - Configuration Management
 """
 import os
+import sys
+from pathlib import Path
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
+
+# Determine the base directory (works for both .app bundle and regular Python)
+if getattr(sys, 'frozen', False):
+    # Running as .app bundle or PyInstaller executable
+    BASE_DIR = Path(sys.executable).parent.parent.parent / 'Resources'
+else:
+    # Running as Python script
+    BASE_DIR = Path(__file__).parent
 
 
 class Config:
     """Application configuration"""
 
     # Output Settings
-    OUTPUT_DIR = os.getenv('ATEM_OUTPUT_DIR', './output')
+    OUTPUT_DIR = os.getenv('ATEM_OUTPUT_DIR', str(BASE_DIR / 'output'))
     IMAGE_WIDTH = 1920
     IMAGE_HEIGHT = 1080
 
     # Template Settings
-    TEMPLATE_DIR = os.getenv('ATEM_TEMPLATE_DIR', './templates')
+    TEMPLATE_DIR = os.getenv('ATEM_TEMPLATE_DIR', str(BASE_DIR / 'templates'))
     SUPPORTED_TEMPLATE_TYPES = ['title', 'lower_third', 'other']
 
     # Font Settings
     DEFAULT_FONT = os.getenv('ATEM_DEFAULT_FONT', 'Helvetica')
-    CUSTOM_FONTS_DIR = './fonts'
+    CUSTOM_FONTS_DIR = str(BASE_DIR / 'fonts')
 
     # ATEM Device Settings (for future use)
     ATEM_IP = os.getenv('ATEM_IP', '')

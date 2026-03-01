@@ -54,6 +54,8 @@ python -m PyInstaller \
     --hidden-import=PIL \
     --hidden-import=PIL.ImageTk \
     --collect-data=PIL \
+    --collect-all=dotenv \
+    --add-data "templates:templates" \
     --windowed \
     --osx-bundle-identifier="com.atem.media-generator" \
     main.py
