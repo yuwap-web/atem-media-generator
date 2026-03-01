@@ -8,7 +8,7 @@ from pathlib import Path
 import os
 from datetime import datetime
 from config import Config
-from models.template import Template
+from models.template import Template, TextLayer, ImageLayer
 from font_manager import get_font_manager
 
 
@@ -53,53 +53,99 @@ class ImageGenerator:
             image = Image.new('RGBA', (self.width, self.height), bg_color)
             draw = ImageDraw.Draw(image)
 
-            # Draw each text layer
-            for layer in template.layers:
-                # Get text value from parameters
-                text = parameters.get(layer.parameter_key, '')
+            # Sort layers by z_order (draw in order: background to foreground)
+            sorted_layers = sorted(template.layers, key=lambda l: getattr(l, 'z_order', 0))
 
-                if not text:
-                    continue  # Skip empty text
+            # Draw each layer
+            for layer in sorted_layers:
+                if isinstance(layer, ImageLayer):
+                    # Draw image layer
+                    self._draw_image_layer(image, layer)
+                elif isinstance(layer, TextLayer):
+                    # Draw text layer
+                    text = parameters.get(layer.parameter_key, '')
+                    if not text:
+                        continue  # Skip empty text
 
-                # Load font
-                font = self._get_font(layer.font_name, layer.font_size)
+                    # Load font
+                    font = self._get_font(layer.font_name, layer.font_size)
 
-                # Ensure color is a tuple (JSON deserializes as list)
-                color = tuple(layer.color) if isinstance(layer.color, list) else layer.color
+                    # Ensure color is a tuple (JSON deserializes as list)
+                    color = tuple(layer.color) if isinstance(layer.color, list) else layer.color
 
-                # Calculate text position based on alignment
-                # Note: Pillow's align parameter only works for multi-line text
-                # For single-line text, we use anchor parameter with calculated positions
-                x, y = layer.x, layer.y
-                anchor = 'lm'  # Default: left-middle
+                    # Calculate text position based on alignment
+                    # Note: Pillow's align parameter only works for multi-line text
+                    # For single-line text, we use anchor parameter with calculated positions
+                    x, y = layer.x, layer.y
+                    anchor = 'lm'  # Default: left-middle
 
-                # Map alignment to anchor parameter
-                if layer.alignment == 'center':
-                    anchor = 'mm'  # middle-middle
-                elif layer.alignment == 'right':
-                    anchor = 'rm'  # right-middle
-                else:  # 'left' or default
-                    anchor = 'lm'  # left-middle
+                    # Map alignment to anchor parameter
+                    if layer.alignment == 'center':
+                        anchor = 'mm'  # middle-middle
+                    elif layer.alignment == 'right':
+                        anchor = 'rm'  # right-middle
+                    else:  # 'left' or default
+                        anchor = 'lm'  # left-middle
 
-                # For center alignment, adjust x to middle of layer width
-                if layer.alignment == 'center':
-                    x = layer.x + layer.width // 2
-                elif layer.alignment == 'right':
-                    x = layer.x + layer.width
+                    # For center alignment, adjust x to middle of layer width
+                    if layer.alignment == 'center':
+                        x = layer.x + layer.width // 2
+                    elif layer.alignment == 'right':
+                        x = layer.x + layer.width
 
-                # Draw text with alignment support
-                draw.text(
-                    xy=(x, y),
-                    text=text,
-                    font=font,
-                    fill=color,  # RGBA tuple
-                    anchor=anchor  # Use anchor for proper alignment
-                )
+                    # Draw text with alignment support
+                    draw.text(
+                        xy=(x, y),
+                        text=text,
+                        font=font,
+                        fill=color,  # RGBA tuple
+                        anchor=anchor  # Use anchor for proper alignment
+                    )
 
             return True, None, image
 
         except Exception as e:
             return False, f"Image generation failed: {str(e)}", None
+
+    def _draw_image_layer(self, canvas: Image.Image, layer: ImageLayer):
+        """
+        Draw image layer on canvas
+
+        Args:
+            canvas: PIL Image canvas to draw on (modified in-place)
+            layer: ImageLayer to draw
+        """
+        try:
+            # Load image from file
+            if not os.path.exists(layer.image_path):
+                # Try relative path from project root
+                relative_path = Path(Config.BASE_DIR) / layer.image_path
+                if relative_path.exists():
+                    image_path = relative_path
+                else:
+                    # Image file not found, skip layer
+                    return
+
+            # Open image
+            img = Image.open(layer.image_path).convert('RGBA')
+
+            # Resize image to layer dimensions if needed
+            if img.size != (layer.width, layer.height):
+                img = img.resize((layer.width, layer.height), Image.Resampling.LANCZOS)
+
+            # Apply opacity if not fully opaque
+            if layer.opacity < 1.0:
+                # Adjust alpha channel by opacity
+                alpha = img.split()[3]  # Get alpha channel
+                alpha = alpha.point(lambda p: int(p * layer.opacity))  # Scale alpha
+                img.putalpha(alpha)
+
+            # Paste image onto canvas at specified position
+            canvas.paste(img, (layer.x, layer.y), img)
+
+        except Exception as e:
+            # Log error but continue rendering
+            print(f"Warning: Failed to draw image layer '{layer.name}': {str(e)}")
 
     def _get_font(self, font_name: str, font_size: int) -> ImageFont.FreeTypeFont:
         """

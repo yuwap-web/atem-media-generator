@@ -5,13 +5,13 @@ Allows users to modify template attributes (font size, color, alignment, font) w
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSpinBox, QComboBox,
     QPushButton, QGroupBox, QScrollArea, QColorDialog, QTableWidget,
-    QTableWidgetItem, QHeaderView
+    QTableWidgetItem, QHeaderView, QFileDialog, QSlider, QLineEdit
 )
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QColor, QIcon
 from pathlib import Path
 
-from models.template import Template
+from models.template import Template, TextLayer, ImageLayer
 from font_manager import get_font_manager
 
 
@@ -235,6 +235,151 @@ class TextLayerEditor(QGroupBox):
         return self.layer
 
 
+class ImageLayerEditor(QGroupBox):
+    """Editor for individual image layer attributes"""
+
+    changed = pyqtSignal()
+
+    def __init__(self, layer: ImageLayer):
+        """Initialize image layer editor"""
+        super().__init__(f"レイヤー: {layer.name}")
+        self.layer = layer
+        self.original_layer = layer
+        self.layer_name = layer.name
+        self.init_ui()
+
+    def init_ui(self):
+        """Initialize UI"""
+        layout = QVBoxLayout()
+
+        # Image file
+        file_layout = QHBoxLayout()
+        file_layout.addWidget(QLabel("ファイル:"))
+        self.file_input = QLineEdit()
+        self.file_input.setText(self.layer.image_path)
+        self.file_input.textChanged.connect(self.on_changed)
+        file_layout.addWidget(self.file_input)
+
+        browse_btn = QPushButton("参照...")
+        browse_btn.clicked.connect(self.on_browse_file)
+        file_layout.addWidget(browse_btn)
+        layout.addLayout(file_layout)
+
+        # X Position
+        x_layout = QHBoxLayout()
+        x_layout.addWidget(QLabel("X位置:"))
+        self.x_spin = QSpinBox()
+        self.x_spin.setMinimum(0)
+        self.x_spin.setMaximum(1920)
+        self.x_spin.setValue(self.layer.x)
+        self.x_spin.setSuffix(" px")
+        self.x_spin.valueChanged.connect(self.on_changed)
+        x_layout.addWidget(self.x_spin)
+        x_layout.addStretch()
+        layout.addLayout(x_layout)
+
+        # Y Position
+        y_layout = QHBoxLayout()
+        y_layout.addWidget(QLabel("Y位置:"))
+        self.y_spin = QSpinBox()
+        self.y_spin.setMinimum(0)
+        self.y_spin.setMaximum(1080)
+        self.y_spin.setValue(self.layer.y)
+        self.y_spin.setSuffix(" px")
+        self.y_spin.valueChanged.connect(self.on_changed)
+        y_layout.addWidget(self.y_spin)
+        y_layout.addStretch()
+        layout.addLayout(y_layout)
+
+        # Width
+        width_layout = QHBoxLayout()
+        width_layout.addWidget(QLabel("幅:"))
+        self.width_spin = QSpinBox()
+        self.width_spin.setMinimum(50)
+        self.width_spin.setMaximum(1920)
+        self.width_spin.setValue(self.layer.width)
+        self.width_spin.setSuffix(" px")
+        self.width_spin.valueChanged.connect(self.on_changed)
+        width_layout.addWidget(self.width_spin)
+        width_layout.addStretch()
+        layout.addLayout(width_layout)
+
+        # Height
+        height_layout = QHBoxLayout()
+        height_layout.addWidget(QLabel("高さ:"))
+        self.height_spin = QSpinBox()
+        self.height_spin.setMinimum(20)
+        self.height_spin.setMaximum(1080)
+        self.height_spin.setValue(self.layer.height)
+        self.height_spin.setSuffix(" px")
+        self.height_spin.valueChanged.connect(self.on_changed)
+        height_layout.addWidget(self.height_spin)
+        height_layout.addStretch()
+        layout.addLayout(height_layout)
+
+        # Opacity
+        opacity_layout = QHBoxLayout()
+        opacity_layout.addWidget(QLabel("不透明度:"))
+        self.opacity_slider = QSlider(Qt.Horizontal)
+        self.opacity_slider.setMinimum(0)
+        self.opacity_slider.setMaximum(100)
+        self.opacity_slider.setValue(int(self.layer.opacity * 100))
+        self.opacity_slider.setTickPosition(QSlider.TicksBelow)
+        self.opacity_slider.setTickInterval(10)
+        self.opacity_slider.sliderMoved.connect(self.on_opacity_changed)
+        opacity_layout.addWidget(self.opacity_slider)
+        self.opacity_label = QLabel(f"{int(self.layer.opacity * 100)}%")
+        opacity_layout.addWidget(self.opacity_label)
+        layout.addLayout(opacity_layout)
+
+        # Z-order (drawing order)
+        z_layout = QHBoxLayout()
+        z_layout.addWidget(QLabel("Z順序:"))
+        self.z_spin = QSpinBox()
+        self.z_spin.setMinimum(0)
+        self.z_spin.setMaximum(100)
+        self.z_spin.setValue(self.layer.z_order)
+        self.z_spin.valueChanged.connect(self.on_changed)
+        z_layout.addWidget(self.z_spin)
+        z_layout.addStretch()
+        layout.addLayout(z_layout)
+
+        self.setLayout(layout)
+
+    def on_browse_file(self):
+        """Handle file browser dialog"""
+        filepath, _ = QFileDialog.getOpenFileName(
+            self,
+            "画像ファイルを選択",
+            str(Path.home()),
+            "画像ファイル (*.png *.jpg *.jpeg *.gif *.bmp);;すべてのファイル (*)"
+        )
+        if filepath:
+            self.file_input.setText(filepath)
+
+    def on_opacity_changed(self):
+        """Handle opacity slider change"""
+        value = self.opacity_slider.value()
+        self.opacity_label.setText(f"{value}%")
+        self.on_changed()
+
+    def on_changed(self):
+        """Handle attribute change - update layer object immediately"""
+        self.layer.image_path = self.file_input.text()
+        self.layer.x = self.x_spin.value()
+        self.layer.y = self.y_spin.value()
+        self.layer.width = self.width_spin.value()
+        self.layer.height = self.height_spin.value()
+        self.layer.opacity = self.opacity_slider.value() / 100.0
+        self.layer.z_order = self.z_spin.value()
+
+        self.changed.emit()
+
+    def get_modified_layer(self):
+        """Return modified layer"""
+        return self.layer
+
+
 class TemplateCustomizer(QWidget):
     """Template customizer panel for runtime attribute editing"""
 
@@ -304,13 +449,19 @@ class TemplateCustomizer(QWidget):
 
         # Create editors for each layer
         if not template.layers:
-            no_layers_label = QLabel("No text layers in this template")
+            no_layers_label = QLabel("このテンプレートにはレイヤーがありません")
             no_layers_label.setStyleSheet("color: #999; font-style: italic;")
             self.editors_layout.addWidget(no_layers_label)
             return
 
         for layer in template.layers:
-            editor = TextLayerEditor(layer)
+            if isinstance(layer, ImageLayer):
+                # Create ImageLayerEditor for image layers
+                editor = ImageLayerEditor(layer)
+            else:
+                # Create TextLayerEditor for text layers
+                editor = TextLayerEditor(layer)
+
             editor.changed.connect(self.on_layer_changed)
             self.layer_editors.append(editor)
             self.editors_layout.addWidget(editor)

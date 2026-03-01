@@ -2,7 +2,7 @@
 Data models for ATEM Media File Generator templates
 """
 from dataclasses import dataclass, field, asdict
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 
 @dataclass
@@ -30,12 +30,34 @@ class TextLayer:
 
 
 @dataclass
+class ImageLayer:
+    """Image layer definition for template"""
+    name: str
+    image_path: str  # Path to image file
+    x: int = 0
+    y: int = 0
+    width: int = 1920
+    height: int = 1080
+    opacity: float = 1.0  # 0.0 to 1.0
+    z_order: int = 1  # Drawing order (lower = drawn first)
+
+    def to_dict(self) -> dict:
+        """Convert to dictionary for JSON serialization"""
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'ImageLayer':
+        """Create from dictionary"""
+        return cls(**data)
+
+
+@dataclass
 class Template:
     """Template definition for image generation"""
     name: str
     template_type: str  # 'title', 'lower_third', 'other'
     background_color: Optional[Tuple[int, int, int, int]] = None  # RGBA
-    layers: List[TextLayer] = field(default_factory=list)
+    layers: List[Union[TextLayer, ImageLayer]] = field(default_factory=list)
     required_parameters: List[str] = field(default_factory=list)
     optional_parameters: List[str] = field(default_factory=list)
 
@@ -53,7 +75,19 @@ class Template:
     @classmethod
     def from_dict(cls, data: dict) -> 'Template':
         """Create from dictionary"""
-        layers = [TextLayer.from_dict(layer) for layer in data.get('layers', [])]
+        layers = []
+        for layer_data in data.get('layers', []):
+            # Determine layer type by checking for identifying fields
+            if 'image_path' in layer_data:
+                # Image layer
+                layers.append(ImageLayer.from_dict(layer_data))
+            elif 'parameter_key' in layer_data:
+                # Text layer
+                layers.append(TextLayer.from_dict(layer_data))
+            else:
+                # Default to text layer for backward compatibility
+                layers.append(TextLayer.from_dict(layer_data))
+
         return cls(
             name=data['name'],
             template_type=data['template_type'],
