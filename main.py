@@ -15,9 +15,11 @@ from PyQt5.QtGui import QIcon, QPixmap
 from config import Config
 from template_manager import TemplateManager
 from image_generator import ImageGenerator
+from csv_processor import CSVProcessor
 from ui.parameter_editor import ParameterEditorPanel
 from ui.preview_panel import PreviewPanel
 from workers.image_generator_worker import ImageGeneratorWorker
+from workers.csv_batch_worker import CSVBatchWorker
 
 
 class ATEMMediaGeneratorApp(QMainWindow):
@@ -259,9 +261,19 @@ class ATEMMediaGeneratorApp(QMainWindow):
 
     def on_export_csv(self):
         """Open CSV batch export dialog"""
+        # Check if a template is selected
+        if not self.current_template:
+            QMessageBox.warning(
+                self,
+                "Warning",
+                "Please select a template first before batch processing."
+            )
+            return
+
+        # Open file dialog to select CSV file
         filepath, _ = QFileDialog.getOpenFileName(
             self,
-            "Open CSV File",
+            "Open CSV File for Batch Processing",
             str(Path.home()),
             "CSV Files (*.csv)"
         )
@@ -269,12 +281,78 @@ class ATEMMediaGeneratorApp(QMainWindow):
         if not filepath:
             return  # User cancelled
 
-        # TODO: Implement CSV batch processing
+        # Confirm batch processing
+        reply = QMessageBox.question(
+            self,
+            "Confirm Batch Processing",
+            f"Process CSV file with template: {self.current_template.name}?\n\n"
+            f"File: {Path(filepath).name}\n"
+            f"Output: {Config.OUTPUT_DIR}",
+            QMessageBox.Yes | QMessageBox.No
+        )
+
+        if reply == QMessageBox.No:
+            return
+
+        # Start batch processing
+        self.start_csv_batch_processing(filepath)
+
+    def start_csv_batch_processing(self, csv_filepath: str):
+        """
+        Start CSV batch processing in background thread
+
+        Args:
+            csv_filepath: Path to CSV file
+        """
+        self.statusBar().showMessage(f"Processing CSV: {Path(csv_filepath).name}")
+
+        # Create worker thread
+        self.worker_thread = QThread()
+        self.generator_worker = CSVBatchWorker(
+            csv_filepath,
+            self.current_template,
+            self.image_generator,
+            Config.OUTPUT_DIR
+        )
+
+        self.generator_worker.moveToThread(self.worker_thread)
+        self.generator_worker.finished.connect(self.on_csv_batch_finished)
+        self.generator_worker.error.connect(self.on_csv_batch_error)
+        self.worker_thread.started.connect(self.generator_worker.run)
+
+        self.worker_thread.start()
+
+    def on_csv_batch_finished(self, num_generated: int):
+        """Handle CSV batch processing complete"""
+        message = f"Batch processing complete!\nGenerated {num_generated} images."
+        self.statusBar().showMessage(message)
+
         QMessageBox.information(
             self,
-            "CSV Export",
-            "CSV batch processing will be implemented in Phase 4"
+            "Batch Processing Complete",
+            f"{message}\n\n"
+            f"Output directory: {Config.OUTPUT_DIR}"
         )
+
+        # Cleanup thread
+        if self.worker_thread:
+            self.worker_thread.quit()
+            self.worker_thread.wait()
+
+    def on_csv_batch_error(self, error_msg: str):
+        """Handle CSV batch processing error"""
+        self.statusBar().showMessage(f"Batch processing failed")
+
+        QMessageBox.critical(
+            self,
+            "Batch Processing Error",
+            f"An error occurred during batch processing:\n\n{error_msg}"
+        )
+
+        # Cleanup thread
+        if self.worker_thread:
+            self.worker_thread.quit()
+            self.worker_thread.wait()
 
     def on_settings(self):
         """Open settings dialog"""
