@@ -5,7 +5,7 @@ Allows users to modify template attributes (font size, color, alignment, font) w
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSpinBox, QComboBox,
     QPushButton, QGroupBox, QScrollArea, QColorDialog, QTableWidget,
-    QTableWidgetItem, QHeaderView, QFileDialog, QSlider, QLineEdit
+    QTableWidgetItem, QHeaderView, QFileDialog, QSlider, QLineEdit, QFormLayout
 )
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QColor, QIcon
@@ -133,58 +133,47 @@ class TextLayerEditor(QGroupBox):
         color_layout.addStretch()
         layout.addLayout(color_layout)
 
-        # Position controls
+        # Position and size controls - grouped for clarity
+        position_group = QGroupBox("位置とサイズ")
+        position_layout = QFormLayout(position_group)
+
         # X Position
-        x_layout = QHBoxLayout()
-        x_layout.addWidget(QLabel("X位置:"))
         self.x_spin = QSpinBox()
         self.x_spin.setMinimum(0)
         self.x_spin.setMaximum(1920)
         self.x_spin.setValue(self.layer.x)
         self.x_spin.setSuffix(" px")
         self.x_spin.valueChanged.connect(self.on_changed)
-        x_layout.addWidget(self.x_spin)
-        x_layout.addStretch()
-        layout.addLayout(x_layout)
+        position_layout.addRow("X位置:", self.x_spin)
 
         # Y Position
-        y_layout = QHBoxLayout()
-        y_layout.addWidget(QLabel("Y位置:"))
         self.y_spin = QSpinBox()
         self.y_spin.setMinimum(0)
         self.y_spin.setMaximum(1080)
         self.y_spin.setValue(self.layer.y)
         self.y_spin.setSuffix(" px")
         self.y_spin.valueChanged.connect(self.on_changed)
-        y_layout.addWidget(self.y_spin)
-        y_layout.addStretch()
-        layout.addLayout(y_layout)
+        position_layout.addRow("Y位置:", self.y_spin)
 
         # Width
-        width_layout = QHBoxLayout()
-        width_layout.addWidget(QLabel("幅:"))
         self.width_spin = QSpinBox()
         self.width_spin.setMinimum(50)
         self.width_spin.setMaximum(1920)
         self.width_spin.setValue(self.layer.width)
         self.width_spin.setSuffix(" px")
         self.width_spin.valueChanged.connect(self.on_changed)
-        width_layout.addWidget(self.width_spin)
-        width_layout.addStretch()
-        layout.addLayout(width_layout)
+        position_layout.addRow("幅:", self.width_spin)
 
         # Height
-        height_layout = QHBoxLayout()
-        height_layout.addWidget(QLabel("高さ:"))
         self.height_spin = QSpinBox()
         self.height_spin.setMinimum(20)
         self.height_spin.setMaximum(500)
         self.height_spin.setValue(self.layer.height)
         self.height_spin.setSuffix(" px")
         self.height_spin.valueChanged.connect(self.on_changed)
-        height_layout.addWidget(self.height_spin)
-        height_layout.addStretch()
-        layout.addLayout(height_layout)
+        position_layout.addRow("高さ:", self.height_spin)
+
+        layout.addWidget(position_group)
 
         self.setLayout(layout)
 
@@ -225,7 +214,7 @@ class TextLayerEditor(QGroupBox):
         # Note: color is updated separately in on_color_picked
 
         # Debug output for troubleshooting
-        # print(f"Layer '{self.layer.name}' updated: font={self.layer.font_name}, size={self.layer.font_size}, x={self.layer.x}, y={self.layer.y}")
+        print(f"[DEBUG] Layer '{self.layer.name}' updated: font={self.layer.font_name}, size={self.layer.font_size}, x={self.layer.x}, y={self.layer.y}, w={self.layer.width}, h={self.layer.height}")
 
         # Signal parent that layer changed
         self.changed.emit()
@@ -265,61 +254,53 @@ class ImageLayerEditor(QGroupBox):
         file_layout.addWidget(browse_btn)
         layout.addLayout(file_layout)
 
+        # Position and size controls - grouped for clarity
+        position_group = QGroupBox("位置とサイズ")
+        position_layout = QFormLayout(position_group)
+
         # X Position
-        x_layout = QHBoxLayout()
-        x_layout.addWidget(QLabel("X位置:"))
         self.x_spin = QSpinBox()
         self.x_spin.setMinimum(0)
         self.x_spin.setMaximum(1920)
         self.x_spin.setValue(self.layer.x)
         self.x_spin.setSuffix(" px")
         self.x_spin.valueChanged.connect(self.on_changed)
-        x_layout.addWidget(self.x_spin)
-        x_layout.addStretch()
-        layout.addLayout(x_layout)
+        position_layout.addRow("X位置:", self.x_spin)
 
         # Y Position
-        y_layout = QHBoxLayout()
-        y_layout.addWidget(QLabel("Y位置:"))
         self.y_spin = QSpinBox()
         self.y_spin.setMinimum(0)
         self.y_spin.setMaximum(1080)
         self.y_spin.setValue(self.layer.y)
         self.y_spin.setSuffix(" px")
         self.y_spin.valueChanged.connect(self.on_changed)
-        y_layout.addWidget(self.y_spin)
-        y_layout.addStretch()
-        layout.addLayout(y_layout)
+        position_layout.addRow("Y位置:", self.y_spin)
 
         # Width
-        width_layout = QHBoxLayout()
-        width_layout.addWidget(QLabel("幅:"))
         self.width_spin = QSpinBox()
         self.width_spin.setMinimum(50)
         self.width_spin.setMaximum(1920)
         self.width_spin.setValue(self.layer.width)
         self.width_spin.setSuffix(" px")
         self.width_spin.valueChanged.connect(self.on_changed)
-        width_layout.addWidget(self.width_spin)
-        width_layout.addStretch()
-        layout.addLayout(width_layout)
+        position_layout.addRow("幅:", self.width_spin)
 
         # Height
-        height_layout = QHBoxLayout()
-        height_layout.addWidget(QLabel("高さ:"))
         self.height_spin = QSpinBox()
         self.height_spin.setMinimum(20)
         self.height_spin.setMaximum(1080)
         self.height_spin.setValue(self.layer.height)
         self.height_spin.setSuffix(" px")
         self.height_spin.valueChanged.connect(self.on_changed)
-        height_layout.addWidget(self.height_spin)
-        height_layout.addStretch()
-        layout.addLayout(height_layout)
+        position_layout.addRow("高さ:", self.height_spin)
+
+        layout.addWidget(position_group)
+
+        # Opacity and Z-order controls - grouped for clarity
+        appearance_group = QGroupBox("表示設定")
+        appearance_layout = QFormLayout(appearance_group)
 
         # Opacity
-        opacity_layout = QHBoxLayout()
-        opacity_layout.addWidget(QLabel("不透明度:"))
         self.opacity_slider = QSlider(Qt.Horizontal)
         self.opacity_slider.setMinimum(0)
         self.opacity_slider.setMaximum(100)
@@ -327,22 +308,22 @@ class ImageLayerEditor(QGroupBox):
         self.opacity_slider.setTickPosition(QSlider.TicksBelow)
         self.opacity_slider.setTickInterval(10)
         self.opacity_slider.sliderMoved.connect(self.on_opacity_changed)
-        opacity_layout.addWidget(self.opacity_slider)
         self.opacity_label = QLabel(f"{int(self.layer.opacity * 100)}%")
-        opacity_layout.addWidget(self.opacity_label)
-        layout.addLayout(opacity_layout)
+        opacity_container = QHBoxLayout()
+        opacity_container.addWidget(self.opacity_slider)
+        opacity_container.addWidget(self.opacity_label)
+        appearance_layout.addRow("不透明度:", opacity_container)
 
         # Z-order (drawing order)
-        z_layout = QHBoxLayout()
-        z_layout.addWidget(QLabel("Z順序:"))
         self.z_spin = QSpinBox()
         self.z_spin.setMinimum(0)
         self.z_spin.setMaximum(100)
         self.z_spin.setValue(self.layer.z_order)
         self.z_spin.valueChanged.connect(self.on_changed)
-        z_layout.addWidget(self.z_spin)
-        z_layout.addStretch()
-        layout.addLayout(z_layout)
+        appearance_layout.addRow("Z順序:", self.z_spin)
+
+        layout.addWidget(appearance_group)
+        layout.addStretch()
 
         self.setLayout(layout)
 
@@ -454,7 +435,15 @@ class TemplateCustomizer(QWidget):
             self.editors_layout.addWidget(no_layers_label)
             return
 
-        for layer in template.layers:
+        print(f"\n[DEBUG] Loading template '{template.name}' with {len(template.layers)} layers")
+
+        for i, layer in enumerate(template.layers):
+            print(f"[DEBUG] Layer {i}: {layer.name}")
+            if isinstance(layer, TextLayer):
+                print(f"  - TextLayer: x={layer.x}, y={layer.y}, w={layer.width}, h={layer.height}")
+            elif isinstance(layer, ImageLayer):
+                print(f"  - ImageLayer: x={layer.x}, y={layer.y}, w={layer.width}, h={layer.height}")
+
             if isinstance(layer, ImageLayer):
                 # Create ImageLayerEditor for image layers
                 editor = ImageLayerEditor(layer)
