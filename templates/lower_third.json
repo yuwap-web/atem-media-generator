@@ -1,0 +1,45 @@
+{
+  "name": "Lower Third - Name Only",
+  "template_type": "lower_third",
+  "background_color": null,
+  "layers": [
+    {
+      "name": "Background Bar",
+      "x": 0,
+      "y": 900,
+      "width": 1920,
+      "height": 180,
+      "font_name": "Helvetica",
+      "font_size": 1,
+      "color": [0, 0, 0, 200],
+      "alignment": "left",
+      "parameter_key": "_background"
+    },
+    {
+      "name": "Name Text",
+      "x": 80,
+      "y": 930,
+      "width": 800,
+      "height": 60,
+      "font_name": "Helvetica",
+      "font_size": 48,
+      "color": [255, 255, 255, 255],
+      "alignment": "left",
+      "parameter_key": "name"
+    },
+    {
+      "name": "Title Text",
+      "x": 80,
+      "y": 1000,
+      "width": 800,
+      "height": 50,
+      "font_name": "Helvetica",
+      "font_size": 32,
+      "color": [220, 220, 220, 255],
+      "alignment": "left",
+      "parameter_key": "title"
+    }
+  ],
+  "required_parameters": ["name"],
+  "optional_parameters": ["title"]
+}

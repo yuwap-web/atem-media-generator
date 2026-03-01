@@ -1,0 +1,57 @@
+{
+  "name": "Multi-Field Layout",
+  "template_type": "other",
+  "background_color": [50, 50, 50, 255],
+  "layers": [
+    {
+      "name": "Header Text",
+      "x": 100,
+      "y": 100,
+      "width": 1720,
+      "height": 80,
+      "font_name": "Helvetica",
+      "font_size": 64,
+      "color": [255, 200, 0, 255],
+      "alignment": "center",
+      "parameter_key": "header"
+    },
+    {
+      "name": "Content Line 1",
+      "x": 150,
+      "y": 300,
+      "width": 1620,
+      "height": 60,
+      "font_name": "Helvetica",
+      "font_size": 40,
+      "color": [255, 255, 255, 255],
+      "alignment": "left",
+      "parameter_key": "content_1"
+    },
+    {
+      "name": "Content Line 2",
+      "x": 150,
+      "y": 400,
+      "width": 1620,
+      "height": 60,
+      "font_name": "Helvetica",
+      "font_size": 40,
+      "color": [255, 255, 255, 255],
+      "alignment": "left",
+      "parameter_key": "content_2"
+    },
+    {
+      "name": "Footer Text",
+      "x": 100,
+      "y": 950,
+      "width": 1720,
+      "height": 50,
+      "font_name": "Helvetica",
+      "font_size": 28,
+      "color": [200, 200, 200, 255],
+      "alignment": "right",
+      "parameter_key": "footer"
+    }
+  ],
+  "required_parameters": ["header", "content_1"],
+  "optional_parameters": ["content_2", "footer"]
+}
