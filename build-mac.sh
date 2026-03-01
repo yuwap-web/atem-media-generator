@@ -44,7 +44,6 @@ echo "✓ Clean complete"
 echo ""
 echo "Building macOS .app bundle..."
 python -m PyInstaller \
-    --onedir \
     --name "ATEM Media Generator" \
     --hidden-import=PyQt5.QtWidgets \
     --hidden-import=PyQt5.QtCore \
