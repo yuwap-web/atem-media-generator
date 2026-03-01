@@ -108,6 +108,7 @@ class ImageGenerator:
                 return font
 
             # Try system fonts (common paths with multiple extensions)
+            # macOS Japanese fonts added
             system_font_paths = [
                 # macOS - multiple formats
                 f"/Library/Fonts/{font_name}.ttf",
@@ -115,15 +116,48 @@ class ImageGenerator:
                 f"/System/Library/Fonts/{font_name}.ttf",
                 f"/System/Library/Fonts/{font_name}.otf",
                 f"/System/Library/Fonts/{font_name}.dfont",
+                f"/System/Library/Fonts/{font_name}.ttc",
                 # macOS Helvetica aliases
                 f"/Library/Fonts/Helvetica.ttc",
                 f"/System/Library/Fonts/Helvetica.ttc",
+                # macOS Japanese fonts (built-in)
+                f"/Library/Fonts/ヒラギノ角ゴシック W4.ttc",
+                f"/Library/Fonts/ヒラギノ角ゴシック W5.ttc",
+                f"/Library/Fonts/ヒラギノ角ゴシック W6.ttc",
+                f"/Library/Fonts/ヒラギノ角ゴシック W7.ttc",
+                f"/Library/Fonts/ヒラギノ角ゴシック W8.ttc",
+                f"/Library/Fonts/ヒラギノ角ゴシック W9.ttc",
+                f"/Library/Fonts/ヒラギノゴシック W4.ttc",
+                f"/Library/Fonts/ヒラギノゴシック W5.ttc",
+                f"/Library/Fonts/ヒラギノゴシック W6.ttc",
+                f"/Library/Fonts/ヒラギノゴシック W7.ttc",
+                f"/Library/Fonts/ヒラギノゴシック W8.ttc",
+                f"/System/Library/Fonts/ヒラギノ角ゴシック W4.ttc",
+                f"/System/Library/Fonts/ヒラギノ角ゴシック W5.ttc",
+                f"/System/Library/Fonts/ヒラギノ角ゴシック W6.ttc",
+                f"/System/Library/Fonts/ヒラギノ角ゴシック W7.ttc",
+                f"/System/Library/Fonts/ヒラギノ角ゴシック W8.ttc",
+                f"/System/Library/Fonts/ヒラギノ角ゴシック W9.ttc",
+                f"/System/Library/Fonts/ヒラギノゴシック W4.ttc",
+                f"/System/Library/Fonts/ヒラギノゴシック W5.ttc",
+                f"/System/Library/Fonts/ヒラギノゴシック W6.ttc",
+                f"/System/Library/Fonts/ヒラギノゴシック W7.ttc",
+                f"/System/Library/Fonts/ヒラギノゴシック W8.ttc",
+                # macOS standard alternative Japanese fonts
+                f"/Library/Fonts/Arial Unicode.ttf",
+                f"/System/Library/Fonts/Arial Unicode.ttf",
                 # Linux
                 f"/usr/share/fonts/truetype/{font_name.lower()}/{font_name}.ttf",
                 f"/usr/share/fonts/opentype/{font_name.lower()}/{font_name}.otf",
+                # Linux Japanese fonts
+                f"/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+                f"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
                 # Windows
                 f"C:\\Windows\\Fonts\\{font_name}.ttf",
                 f"C:\\Windows\\Fonts\\{font_name}.otf",
+                # Windows Japanese fonts
+                f"C:\\Windows\\Fonts\\meiryo.ttc",
+                f"C:\\Windows\\Fonts\\msmincho.ttc",
             ]
 
             for path in system_font_paths:

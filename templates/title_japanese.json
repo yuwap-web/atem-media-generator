@@ -1,0 +1,33 @@
+{
+  "name": "タイトル - 日本語",
+  "template_type": "title",
+  "background_color": [30, 30, 40, 255],
+  "layers": [
+    {
+      "name": "メインタイトル",
+      "x": 100,
+      "y": 350,
+      "width": 1720,
+      "height": 250,
+      "font_name": "ヒラギノ角ゴシック",
+      "font_size": 72,
+      "color": [255, 200, 100, 255],
+      "alignment": "center",
+      "parameter_key": "title"
+    },
+    {
+      "name": "サブタイトル",
+      "x": 100,
+      "y": 650,
+      "width": 1720,
+      "height": 100,
+      "font_name": "ヒラギノゴシック",
+      "font_size": 40,
+      "color": [180, 180, 200, 255],
+      "alignment": "center",
+      "parameter_key": "subtitle"
+    }
+  ],
+  "required_parameters": ["title"],
+  "optional_parameters": ["subtitle"]
+}

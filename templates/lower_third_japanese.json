@@ -1,0 +1,33 @@
+{
+  "name": "ロワーサード - 日本語",
+  "template_type": "lower_third",
+  "background_color": [0, 0, 0, 0],
+  "layers": [
+    {
+      "name": "名前",
+      "x": 80,
+      "y": 930,
+      "width": 800,
+      "height": 60,
+      "font_name": "ヒラギノ角ゴシック",
+      "font_size": 48,
+      "color": [255, 255, 255, 255],
+      "alignment": "left",
+      "parameter_key": "name"
+    },
+    {
+      "name": "肩書き",
+      "x": 80,
+      "y": 1000,
+      "width": 800,
+      "height": 50,
+      "font_name": "ヒラギノゴシック",
+      "font_size": 32,
+      "color": [220, 220, 220, 255],
+      "alignment": "left",
+      "parameter_key": "title"
+    }
+  ],
+  "required_parameters": ["name"],
+  "optional_parameters": ["title"]
+}

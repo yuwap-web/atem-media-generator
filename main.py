@@ -18,6 +18,7 @@ from image_generator import ImageGenerator
 from csv_processor import CSVProcessor
 from ui.parameter_editor import ParameterEditorPanel
 from ui.preview_panel import PreviewPanel
+from ui.template_customizer import TemplateCustomizer
 from workers.image_generator_worker import ImageGeneratorWorker
 from workers.csv_batch_worker import CSVBatchWorker
 
@@ -55,7 +56,7 @@ class ATEMMediaGeneratorApp(QMainWindow):
     def init_ui(self):
         """Initialize user interface"""
         self.setWindowTitle("ATEM Media File Generator")
-        self.setGeometry(100, 100, 1400, 800)
+        self.setGeometry(100, 100, 1600, 900)
 
         # Create central widget and main layout
         central_widget = QWidget()
@@ -65,9 +66,8 @@ class ATEMMediaGeneratorApp(QMainWindow):
         # Left Panel: Template List
         left_panel = self.create_left_panel()
 
-        # Middle Panel: Parameter Editor
-        self.parameter_editor = ParameterEditorPanel()
-        self.parameter_editor.parameter_changed.connect(self.on_parameter_changed)
+        # Middle Panel: Parameter Editor & Template Customizer
+        middle_panel = self.create_middle_panel()
 
         # Right Panel: Preview
         self.preview_panel = PreviewPanel()
@@ -75,7 +75,7 @@ class ATEMMediaGeneratorApp(QMainWindow):
         # Create splitter for resizable panels
         splitter = QSplitter(Qt.Horizontal)
         splitter.addWidget(left_panel)
-        splitter.addWidget(self.parameter_editor)
+        splitter.addWidget(middle_panel)
         splitter.addWidget(self.preview_panel)
         splitter.setStretchFactor(0, 1)
         splitter.setStretchFactor(1, 1)
@@ -108,6 +108,30 @@ class ATEMMediaGeneratorApp(QMainWindow):
         refresh_btn.clicked.connect(self.load_templates)
         layout.addWidget(refresh_btn)
 
+        return widget
+
+    def create_middle_panel(self) -> QWidget:
+        """Create middle panel with parameter editor and template customizer"""
+        widget = QWidget()
+        layout = QVBoxLayout(widget)
+
+        # Create splitter for vertical division
+        splitter = QSplitter(Qt.Vertical)
+
+        # Parameter Editor
+        self.parameter_editor = ParameterEditorPanel()
+        self.parameter_editor.parameter_changed.connect(self.on_parameter_changed)
+
+        # Template Customizer
+        self.template_customizer = TemplateCustomizer()
+        self.template_customizer.template_modified.connect(self.on_template_modified)
+
+        splitter.addWidget(self.parameter_editor)
+        splitter.addWidget(self.template_customizer)
+        splitter.setStretchFactor(0, 1)
+        splitter.setStretchFactor(1, 1)
+
+        layout.addWidget(splitter)
         return widget
 
     def create_toolbar(self):
@@ -175,6 +199,9 @@ class ATEMMediaGeneratorApp(QMainWindow):
         # Load template into parameter editor
         self.parameter_editor.load_template(self.current_template)
 
+        # Load template into customizer
+        self.template_customizer.load_template(self.current_template)
+
         self.statusBar().showMessage(f"Template: {self.current_template.name}")
 
         # Generate preview with default parameters
@@ -185,6 +212,12 @@ class ATEMMediaGeneratorApp(QMainWindow):
         self.current_parameters = parameters
 
         if Config.PREVIEW_UPDATE_MODE == 'realtime' and self.current_template:
+            self.generate_preview()
+
+    def on_template_modified(self, modified_template):
+        """Handle template modification from customizer"""
+        # Template attributes have changed, regenerate preview
+        if self.current_template:
             self.generate_preview()
 
     def generate_preview(self):

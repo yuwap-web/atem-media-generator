@@ -9,6 +9,8 @@ A cross-platform desktop application for generating broadcast-quality PNG images
 ## Features
 
 - 🖼️ **Template-Based Image Generation**: Define reusable templates with text layers, fonts, and colors
+- 🎛️ **Template Customizer**: Modify text attributes (font, size, color, alignment) in real-time without editing JSON
+- 🌍 **Japanese Font Support**: Built-in support for Hiragino Sans, Hiragino Sans Serif, and other system fonts
 - 🔄 **Real-Time Preview**: See changes instantly as you edit parameters
 - 📝 **Batch Processing**: Generate multiple images from CSV files
 - 🎨 **Professional Output**: 1920×1080 PNG images with transparent backgrounds (RGBA)
@@ -123,6 +125,21 @@ python test_integration.py
    - **Optional parameters** (can be left empty)
 2. Changes appear in real-time in the **Preview** panel (right)
 
+### 2.5. Customize Template (Optional)
+
+Use the **Template Customizer** panel to modify text attributes without editing JSON:
+
+1. In the **Template Customizer** section (middle panel, below parameters):
+   - **Font**: Select from system fonts including Japanese fonts (ヒラギノ角ゴシック, etc.)
+   - **Size**: Adjust font size from 8px to 200px
+   - **Alignment**: Choose left/center/right alignment
+   - **Color**: Pick text color with the color picker
+
+2. Changes preview in real-time
+3. Click **Apply Changes** to confirm or **Reset to Original** to discard
+
+*See [Template Customizer Guide](TEMPLATE_CUSTOMIZER_GUIDE.md) for detailed instructions*
+
 ### 3. Save Single Image
 
 1. Once satisfied with the preview, click **Save PNG** in the toolbar
@@ -183,10 +200,21 @@ Templates are JSON files defining image layout and parameters:
 
 ### Available Fonts
 
-The application uses system fonts:
-- **macOS**: Helvetica, Arial, Courier, etc.
+The application uses system fonts and supports Japanese fonts:
+
+**Standard Fonts**:
+- **macOS**: Helvetica, Arial, Menlo, Courier, Times New Roman, Georgia, Monaco
 - **Windows**: Segoe UI, Calibri, Courier New, etc.
 - **Custom**: Place TTF files in `fonts/` directory
+
+**Japanese Fonts** (built-in support):
+- **ヒラギノ角ゴシック** (Hiragino Sans) - Modern sans-serif
+- **ヒラギノゴシック** (Hiragino Sans Serif) - Standard sans-serif
+- **Arial Unicode** - Unicode support
+- **Meiryo** (Windows) - Standard Japanese font
+- **MS 明朝** (Windows) - Japanese serif font
+
+*For detailed Japanese font support and sample templates, see [Template Customizer Guide](TEMPLATE_CUSTOMIZER_GUIDE.md)*
 
 ### Adding Custom Templates
 
