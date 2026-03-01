@@ -59,6 +59,14 @@ python -m PyInstaller \
     --osx-bundle-identifier="com.atem.media-generator" \
     main.py
 
+# Remove redundant --onedir output (keep only .app bundle)
+if [ -d "dist/ATEM Media Generator" ] && [ -d "dist/ATEM Media Generator.app" ]; then
+    echo ""
+    echo "Cleaning redundant build output..."
+    rm -rf "dist/ATEM Media Generator"
+    echo "✓ Removed redundant directory"
+fi
+
 echo ""
 echo "========================================="
 echo "✅ macOS .app Bundle Build Complete!"
